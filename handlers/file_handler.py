@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from typing import List
+from models.transaction import Transaction
 import pandas as pd
 
 class FileHandler(ABC):
@@ -17,7 +19,7 @@ class FileHandler(ABC):
         pass
 
     @abstractmethod
-    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, df: pd.DataFrame) -> List[Transaction]:
         """
         Transforms the DataFrame to a normalized structure.
         """
