@@ -2,6 +2,7 @@ from handlers.banks.bank_bpi_handler import BankBPIHandler
 from handlers.banks.bank_cgd_handler import BankCGDHandler
 from handlers.banks.bank_revolut_handler import BankRevolutHandler
 
+
 class FileHandlerFactory:
     @staticmethod
     def get_handler(bank: str):

@@ -1,5 +1,6 @@
 from handlers.file_handler import FileHandler
 
+
 class BankRevolutHandler(FileHandler):
     def read_file(self, file_path: str):
         raise NotImplementedError("The 'read_file' method is not implemented yet.")
