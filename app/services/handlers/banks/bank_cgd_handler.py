@@ -1,4 +1,3 @@
-import pandas as pd
 from handlers.file_handler import FileHandler
 
 

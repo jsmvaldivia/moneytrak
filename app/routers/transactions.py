@@ -4,9 +4,11 @@ from app.handlers.file_handler_factory import FileHandlerFactory
 
 router = APIRouter()
 
+
 @router.get("/hello", tags=["hello"])
 def hello():
     return {"Hello": "World"}
+
 
 def handle_files(bank, file_path):
     try:
@@ -31,7 +33,8 @@ def handle_files(bank, file_path):
     except ValueError as e:
         print(f"Error: {e}")
 
-#if __name__ == "__main__":
+
+# if __name__ == "__main__":
 #    bank = "BPI"  # This could be dynamically determined or user-provided
 #    file_path = "bpi_2212233828_20241225.xlsx"
 #    handle_files(bank, file_path)

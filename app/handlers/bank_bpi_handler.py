@@ -5,6 +5,7 @@ from typing import List
 from app.handlers.file_handler import FileHandler
 from app.models import Transaction
 
+
 class BankBPIHandler(FileHandler):
     def read_file(self, file_path: str) -> pd.DataFrame:
         """

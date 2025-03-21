@@ -1,1 +1,3 @@
-from app.routers import transactions
+from app.routers import transactions as transactions
+
+__all__ = ["transactions"]
