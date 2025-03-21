@@ -12,8 +12,7 @@ The purpose of this project is to provide a unified way to handle different bank
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- Required Python packages (listed in `requirements.txt`)
+- Python 3.10 or higher
 
 ### Installation
 
@@ -25,9 +24,10 @@ The purpose of this project is to provide a unified way to handle different bank
    ```
 
 2. Install the required packages:
-   ```sh
-   pip install -r requirements.txt
-   ```
+    ```sh
+    uv sync
+    ```
+It creates the virtual environment and installs the required packages out from [pyproject.toml](pyproject.toml) file
 
 ### Usage
 
