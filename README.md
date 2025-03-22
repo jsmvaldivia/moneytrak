@@ -31,17 +31,23 @@ It creates the virtual environment and installs the required packages out from [
 
 ### Usage
 
-1. Set the bank and file path in the `app.py` file:
+1. Start the FastAPI server:
 
-   ```python
-   bank = "BPI"  # This could be dynamically determined or user-provided
-   file_path = "path_to_your_file.xlsx"
-   ```
-
-2. Run the application:
    ```sh
-   python app.py
+   uv run fastapi dev
    ```
+
+2. The API will be available at `http://localhost:8000`
+
+3. Use the API endpoints to upload and process bank transaction files
+
+### Testing
+
+Run the unit tests with:
+
+```sh
+uv run pytest
+```
 
 ### Adding New Bank Handlers
 
