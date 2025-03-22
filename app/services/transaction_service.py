@@ -1,5 +1,6 @@
 from app.handlers.file_handler_factory import FileHandlerFactory
 
+
 def handle_files(bank, file_path):
     try:
         handler = FileHandlerFactory.get_handler(bank)

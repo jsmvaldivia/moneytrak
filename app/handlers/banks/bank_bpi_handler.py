@@ -7,9 +7,6 @@ from typing import List
 
 class BankBPIHandler(FileHandler):
     def read_file(self, file_path: str) -> pd.DataFrame:
-        """
-        Reads a file and returns its content as a DataFrame with additional metadata.
-        """
         # Extract metadata from file name
         file_name = os.path.basename(file_path)
         parts = file_name.split("_")
@@ -35,9 +32,6 @@ class BankBPIHandler(FileHandler):
         return data_frame
 
     def validate_file(self, df: pd.DataFrame) -> None:
-        """
-        Validates the structure of the DataFrame.
-        """
         errors = []
 
         # Check if the file is empty
