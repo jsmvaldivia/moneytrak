@@ -31,9 +31,4 @@ async def upload_transactions_file(bank: str = Form(...), file: UploadFile = Fil
     bank_file_handler = FileHandlerFactory.get_handler(bank)
     pd = bank_file_handler.read_file(file.filename)
     print(pd)
-
-
-# if __name__ == "__main__":
-#    bank = "BPI"  # This could be dynamically determined or user-provided
-#    file_path = "bpi_2212233828_20241225.xlsx"
-#    handle_files(bank, file_path)
+    return {"filename": file.filename, "bank": bank}
