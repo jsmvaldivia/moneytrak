@@ -1,6 +1,8 @@
+
 from unittest.mock import patch
 import pandas as pd
-from handlers.banks.bank_bpi_handler import BankBPIHandler
+
+from app.handlers.banks.bank_bpi_handler import BankBPIHandler
 
 # Mock valid data
 valid_data = pd.DataFrame(

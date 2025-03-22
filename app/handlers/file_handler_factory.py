@@ -1,6 +1,6 @@
-from app.handlers.bank_bpi_handler import BankBPIHandler
-from app.handlers.bank_cgd_handler import BankCGDHandler
-from app.handlers.bank_revolut_handler import BankRevolutHandler
+from app.handlers.banks.bank_bpi_handler import BankBPIHandler
+from app.handlers.banks.bank_cgd_handler import BankCGDHandler
+from app.handlers.banks.bank_revolut_handler import BankRevolutHandler
 
 
 class FileHandlerFactory:

@@ -1,9 +1,8 @@
 import pandas as pd
 import os
-from typing import List
-
 from app.handlers.file_handler import FileHandler
 from app.models import Transaction
+from typing import List
 
 
 class BankBPIHandler(FileHandler):
