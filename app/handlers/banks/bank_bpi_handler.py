@@ -101,7 +101,6 @@ class BankBPIHandler(FileHandler):
                 source=row["source"],
                 account_id=row["account_id"],
                 extraction_date=row["extraction_date"],
-                entity_code="bpi",
             ),
             axis=1,
         ).tolist()

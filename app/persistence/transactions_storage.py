@@ -8,8 +8,8 @@ class TransactionsStorage:
     async def insert_transctions_batch(self, transactions: list):
         query = """
             INSERT INTO transactions (
-                accountId, dateMovement, valueDate, description, amount, balance, entity_code, extraction_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        date, value_date, description, amount, balance, category, source, account_id, extraction_date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         await self.db.execute(query, ())
 

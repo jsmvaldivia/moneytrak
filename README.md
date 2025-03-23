@@ -13,6 +13,9 @@ The purpose of this project is to provide a unified way to handle different bank
 ### Prerequisites
 
 - Python 3.10 or higher
+- [uv](https://docs.astral.sh/uv/) installed
+- [ruff](https://docs.astral.sh/ruff/) installed
+- [dbmate](https://github.com/amacneil/dbmate) installed
 
 ### Installation
 
@@ -49,13 +52,19 @@ Run the unit tests with:
 uv run pytest
 ```
 
-### Adding New Bank Handlers
+### Linting and Formatting
 
-To add support for a new bank:
+Lint the code with:
 
-1. Create a new handler class in the `handlers/banks` directory, inheriting from `FileHandler`.
-2. Implement the `read_file`, `validate_file`, and `transform` methods.
-3. Register the new handler in the `FileHandlerFactory`.
+```sh
+ruff check
+```
+You can even auto-fix the linting issues with the `--fix flag`:
+
+To format you can use the following command:
+```sh
+ruff format
+```
 
 ### Contributing
 
