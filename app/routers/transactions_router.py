@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Form, UploadFile, File, HTTPException
+from fastapi import APIRouter, Form, UploadFile, File, HTTPException, Depends
 import os
 
-from app.handlers.file_handler_factory import FileHandlerFactory
+from app.dependencies.transactions_deps import get_transaction_service
+from app.services.transactions_service import TransactionsService
 
 ALLOWED_EXTENSIONS = {".xlsx", ".csv"}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
@@ -9,26 +10,22 @@ MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 router = APIRouter()
 
 
-@router.get("/hello", tags=["hello"])
-def hello():
-    test = "Hello World"
-    return test
-
-
 @router.post("/upload", tags=["transactions"])
-async def upload_transactions_file(bank: str = Form(...), file: UploadFile = File(...)):
+async def upload_transactions_file(
+    bank: str = Form(...),
+    file: UploadFile = File(...),
+    service: TransactionsService = Depends(get_transaction_service),
+):
     if file.filename is None:
         raise HTTPException(status_code=400, detail="No file uploaded.")
 
-    _, ext = os.path.splitext(file.filename)
-    if ext not in ALLOWED_EXTENSIONS:
+    _, extension = os.path.splitext(file.filename)
+    if extension not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Unsupported file extension.")
 
     if bank not in ["BPI"]:
         # Temporary solution to test the factory
         raise HTTPException(status_code=400, detail="Unsupported bank extract file")
 
-    bank_file_handler = FileHandlerFactory.get_handler(bank)
-    pd = bank_file_handler.read_file(file.filename)
-    print(pd)
+    await service.save_transactions(bank, file.filename)
     return {"filename": file.filename, "bank": bank}

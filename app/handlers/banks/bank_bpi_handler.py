@@ -51,9 +51,9 @@ class BankBPIHandler(FileHandler):
         if missing_columns:
             errors.append(f"Missing columns: {', '.join(missing_columns)}")
 
-        critical_columns = ["Data Mov.", "Descrição do Movimento", "Valor em EUR"]
-        if df[critical_columns].isnull().any().any():
-            errors.append("Missing values in critical columns.")
+        #        critical_columns = ["Data Mov.", "Descrição do Movimento", "Valor em EUR"]
+        #        if df[critical_columns].isnull().any().any():
+        #            errors.append("Missing values in critical columns.")
 
         # Raise all errors at once
         if errors:
