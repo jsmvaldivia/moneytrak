@@ -66,6 +66,23 @@ To format you can use the following command:
 ruff format
 ```
 
+### Database Migrations
+
+To create a new migration:
+```sh
+dbmate new migration_name
+```
+
+To apply the migrations:
+```sh
+dbmate up
+```
+
+To rollback the migrations:
+```sh
+dbmate down
+```
+
 ### Contributing
 
 Feel free to submit issues or pull requests if you have suggestions or improvements.
