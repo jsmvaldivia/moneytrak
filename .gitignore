@@ -31,3 +31,23 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### H2 Database ###
+data/
+*.mv.db
+*.trace.db
+
+### Environment & Secrets ###
+.env
+.env.local
+.env.*.local
+
+### Logs ###
+*.log
+logs/
+
+### OS ###
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp

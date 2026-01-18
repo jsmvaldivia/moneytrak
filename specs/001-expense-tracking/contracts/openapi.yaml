@@ -1,0 +1,482 @@
+openapi: 3.0.3
+info:
+  title: MoneyTrak Expense Tracking API
+  description: |
+    RESTful API for tracking personal expenses. Supports full CRUD operations with validation,
+    optimistic locking for concurrent updates, and standardized error responses.
+
+    Key Features:
+    - Record expenses with description, amount, currency, and date
+    - List all expenses in reverse chronological order
+    - Update expenses with optimistic locking (version control)
+    - Delete expenses by ID
+    - Comprehensive validation with detailed error messages
+
+    Specification: specs/001-expense-tracking/spec.md
+  version: 1.0.0
+  contact:
+    name: MoneyTrak API Support
+    email: support@moneytrak.dev
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.moneytrak.dev
+    description: Production server
+
+tags:
+  - name: expenses
+    description: Expense tracking operations
+
+paths:
+  /v1/expenses:
+    post:
+      tags:
+        - expenses
+      summary: Create a new expense
+      description: |
+        Records a new expense transaction. Returns the created expense with generated ID and version.
+        Validates all fields per FR-003 through FR-031.
+      operationId: createExpense
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseCreationRequest'
+            examples:
+              validExpense:
+                summary: Valid expense record
+                value:
+                  description: "Coffee at Starbucks"
+                  amount: 4.50
+                  currency: "USD"
+                  date: "2026-01-16T09:30:00-05:00"
+              invalidCurrency:
+                summary: Invalid currency code
+                value:
+                  description: "Test"
+                  amount: 10.00
+                  currency: "XXX"
+                  date: "2026-01-16T10:00:00Z"
+      responses:
+        '201':
+          description: Expense created successfully
+          headers:
+            Location:
+              description: URI of the created expense
+              schema:
+                type: string
+                example: /v1/expenses/123e4567-e89b-12d3-a456-426614174000
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseResponse'
+              examples:
+                createdExpense:
+                  $ref: '#/components/examples/ExpenseExample'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    get:
+      tags:
+        - expenses
+      summary: List all expenses
+      description: |
+        Retrieves all expenses in reverse chronological order (newest first).
+        Returns empty array if no expenses exist. (FR-008, FR-013)
+      operationId: listExpenses
+      responses:
+        '200':
+          description: List of expenses retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExpenseResponse'
+              examples:
+                multipleExpenses:
+                  summary: Multiple expenses
+                  value:
+                    - id: "123e4567-e89b-12d3-a456-426614174000"
+                      description: "Coffee at Starbucks"
+                      amount: 4.50
+                      currency: "USD"
+                      date: "2026-01-16T09:30:00Z"
+                      version: 1
+                      createdAt: "2026-01-16T14:30:00Z"
+                      updatedAt: "2026-01-16T14:30:00Z"
+                    - id: "234e5678-e89b-12d3-a456-426614174001"
+                      description: "Lunch"
+                      amount: 15.00
+                      currency: "USD"
+                      date: "2026-01-15T12:00:00Z"
+                      version: 1
+                      createdAt: "2026-01-15T17:00:00Z"
+                      updatedAt: "2026-01-15T17:00:00Z"
+                emptyList:
+                  summary: No expenses
+                  value: []
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /v1/expenses/{id}:
+    get:
+      tags:
+        - expenses
+      summary: Retrieve a single expense by ID
+      description: Returns complete expense details for the specified ID (FR-009)
+      operationId: getExpense
+      parameters:
+        - $ref: '#/components/parameters/ExpenseId'
+      responses:
+        '200':
+          description: Expense retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseResponse'
+              examples:
+                expense:
+                  $ref: '#/components/examples/ExpenseExample'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      tags:
+        - expenses
+      summary: Update an existing expense
+      description: |
+        Updates expense fields with optimistic locking. Requires current version number
+        to prevent concurrent update conflicts. (FR-010, FR-015, FR-017)
+      operationId: updateExpense
+      parameters:
+        - $ref: '#/components/parameters/ExpenseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseUpdateRequest'
+            examples:
+              fullUpdate:
+                summary: Update all fields
+                value:
+                  description: "Coffee at Starbucks (updated)"
+                  amount: 5.00
+                  currency: "USD"
+                  date: "2026-01-16T09:30:00-05:00"
+                  version: 1
+              partialUpdate:
+                summary: Update only description
+                value:
+                  description: "Coffee (corrected typo)"
+                  version: 1
+      responses:
+        '200':
+          description: Expense updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseResponse'
+              examples:
+                updatedExpense:
+                  summary: Updated expense (version incremented)
+                  value:
+                    id: "123e4567-e89b-12d3-a456-426614174000"
+                    description: "Coffee at Starbucks (updated)"
+                    amount: 5.00
+                    currency: "USD"
+                    date: "2026-01-16T09:30:00Z"
+                    version: 2
+                    createdAt: "2026-01-16T14:30:00Z"
+                    updatedAt: "2026-01-16T15:00:00Z"
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '409':
+          $ref: '#/components/responses/ConflictError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags:
+        - expenses
+      summary: Delete an expense by ID
+      description: Permanently removes the expense record (FR-011)
+      operationId: deleteExpense
+      parameters:
+        - $ref: '#/components/parameters/ExpenseId'
+      responses:
+        '204':
+          description: Expense deleted successfully (no content)
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  parameters:
+    ExpenseId:
+      name: id
+      in: path
+      required: true
+      description: Unique expense identifier (UUID)
+      schema:
+        type: string
+        format: uuid
+        example: "123e4567-e89b-12d3-a456-426614174000"
+
+  schemas:
+    ExpenseCreationRequest:
+      type: object
+      required:
+        - description
+        - amount
+        - currency
+        - date
+      properties:
+        description:
+          type: string
+          maxLength: 500
+          minLength: 1
+          description: What was purchased (FR-001, FR-006, FR-018)
+          example: "Coffee at Starbucks"
+        amount:
+          type: number
+          format: decimal
+          minimum: 0.01
+          maximum: 999999999.99
+          multipleOf: 0.01
+          description: Cost of expense (positive, max 2 decimals) (FR-003, FR-019, FR-028)
+          example: 4.50
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: ISO 4217 3-letter currency code (FR-004)
+          example: "USD"
+        date:
+          type: string
+          format: date-time
+          description: When transaction occurred (ISO 8601, not future) (FR-005, FR-020)
+          example: "2026-01-16T09:30:00-05:00"
+
+    ExpenseUpdateRequest:
+      type: object
+      required:
+        - version
+      properties:
+        description:
+          type: string
+          maxLength: 500
+          minLength: 1
+          description: Updated description (optional)
+          example: "Coffee at Starbucks (updated)"
+        amount:
+          type: number
+          format: decimal
+          minimum: 0.01
+          maximum: 999999999.99
+          multipleOf: 0.01
+          description: Updated amount (optional)
+          example: 5.00
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: Updated currency code (optional)
+          example: "EUR"
+        date:
+          type: string
+          format: date-time
+          description: Updated transaction date (optional)
+          example: "2026-01-16T10:00:00Z"
+        version:
+          type: integer
+          minimum: 1
+          description: Current version for optimistic locking (FR-017, FR-024)
+          example: 1
+
+    ExpenseResponse:
+      type: object
+      required:
+        - id
+        - description
+        - amount
+        - currency
+        - date
+        - version
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique expense identifier (FR-002)
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        description:
+          type: string
+          maxLength: 500
+          description: What was purchased
+          example: "Coffee at Starbucks"
+        amount:
+          type: number
+          format: decimal
+          description: Cost of expense
+          example: 4.50
+        currency:
+          type: string
+          pattern: '^[A-Z]{3}$'
+          description: ISO 4217 currency code
+          example: "USD"
+        date:
+          type: string
+          format: date-time
+          description: Transaction date (ISO 8601 UTC)
+          example: "2026-01-16T09:30:00Z"
+        version:
+          type: integer
+          minimum: 1
+          description: Current version number (FR-016, FR-022, FR-023)
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          description: Record creation timestamp (UTC) (FR-029)
+          example: "2026-01-16T14:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last modification timestamp (UTC) (FR-030)
+          example: "2026-01-16T14:30:00Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - status
+        - error
+        - message
+        - details
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        error:
+          type: string
+          description: Error type classification
+          enum:
+            - ValidationError
+            - NotFound
+            - Conflict
+            - InternalError
+          example: "ValidationError"
+        message:
+          type: string
+          description: Human-readable error description
+          example: "Invalid expense data"
+        details:
+          type: array
+          description: Field-specific error details (empty for non-validation errors)
+          items:
+            $ref: '#/components/schemas/FieldError'
+
+    FieldError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          description: Name of the invalid field
+          example: "amount"
+        message:
+          type: string
+          description: Validation error message for this field
+          example: "Amount must be positive with up to 2 decimal places"
+
+  examples:
+    ExpenseExample:
+      summary: Complete expense record
+      value:
+        id: "123e4567-e89b-12d3-a456-426614174000"
+        description: "Coffee at Starbucks"
+        amount: 4.50
+        currency: "USD"
+        date: "2026-01-16T09:30:00Z"
+        version: 1
+        createdAt: "2026-01-16T14:30:00Z"
+        updatedAt: "2026-01-16T14:30:00Z"
+
+  responses:
+    ValidationError:
+      description: Validation failed on one or more fields
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            multipleErrors:
+              summary: Multiple validation errors
+              value:
+                status: 400
+                error: "ValidationError"
+                message: "Invalid expense data"
+                details:
+                  - field: "amount"
+                    message: "Amount must be positive with up to 2 decimal places"
+                  - field: "currency"
+                    message: "Invalid ISO 4217 currency code"
+            futureDate:
+              summary: Future date error
+              value:
+                status: 400
+                error: "ValidationError"
+                message: "Invalid expense data"
+                details:
+                  - field: "date"
+                    message: "Date must not be in the future"
+
+    NotFoundError:
+      description: Expense ID does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: 404
+            error: "NotFound"
+            message: "Expense not found"
+            details: []
+
+    ConflictError:
+      description: Version mismatch during concurrent update (optimistic locking)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: 409
+            error: "Conflict"
+            message: "Version mismatch: expense has been modified"
+            details: []
+
+    InternalError:
+      description: Unexpected system error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: 500
+            error: "InternalError"
+            message: "An unexpected error occurred"
+            details: []
+
+security: []  # No authentication required (per spec Out of Scope section)
