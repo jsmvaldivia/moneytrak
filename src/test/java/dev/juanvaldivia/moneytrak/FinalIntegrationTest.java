@@ -1,0 +1,195 @@
+package dev.juanvaldivia.moneytrak;
+
+import dev.juanvaldivia.moneytrak.categories.CategoryRepository;
+import dev.juanvaldivia.moneytrak.transactions.TransactionRepository;
+import dev.juanvaldivia.moneytrak.transactions.TransactionStability;
+import dev.juanvaldivia.moneytrak.transactions.TransactionType;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/**
+ * Final integration test verifying all 5 user stories work end-to-end.
+ *
+ * This test validates:
+ * - US1: Category management (CRUD, predefined categories)
+ * - US2: Transaction-category linking
+ * - US3: Transaction types (EXPENSE/INCOME) with summaries
+ * - US4: Transaction stability (FIXED/VARIABLE) with filtering
+ * - US5: Migration (old endpoints return 404)
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@Transactional
+class FinalIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Test
+    void completeWorkflow_AllFiveUserStories_ShouldWork() throws Exception {
+        // ============================================================================
+        // US1: Category Management
+        // ============================================================================
+
+        // Verify 14 predefined categories exist
+        mockMvc.perform(get("/v1/categories"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(15)); // 14 + "Others"
+
+        // Create custom category
+        String createCategoryResponse = mockMvc.perform(post("/v1/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"Medical\"}"))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.name").value("Medical"))
+            .andExpect(jsonPath("$.isPredefined").value(false))
+            .andReturn().getResponse().getContentAsString();
+
+        String categoryId = extractId(createCategoryResponse);
+
+        // ============================================================================
+        // US2: Transaction-Category Linking
+        // ============================================================================
+
+        // Create transaction with category (EXPENSE + VARIABLE defaults)
+        String createTxResponse = mockMvc.perform(post("/v1/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                    {
+                        "description": "Doctor visit",
+                        "amount": 75.50,
+                        "currency": "EUR",
+                        "date": "2026-01-22T10:00:00Z",
+                        "categoryId": "%s"
+                    }
+                    """, categoryId)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.categoryId").value(categoryId))
+            .andExpect(jsonPath("$.categoryName").value("Medical"))
+            .andExpect(jsonPath("$.transactionType").value("EXPENSE"))
+            .andExpect(jsonPath("$.transactionStability").value("VARIABLE"))
+            .andReturn().getResponse().getContentAsString();
+
+        String transactionId = extractId(createTxResponse);
+
+        // Filter transactions by category
+        mockMvc.perform(get("/v1/transactions?categoryId=" + categoryId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].categoryName").value("Medical"));
+
+        // ============================================================================
+        // US3: Transaction Types (EXPENSE vs INCOME)
+        // ============================================================================
+
+        // Create INCOME transaction
+        mockMvc.perform(post("/v1/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "description": "Freelance payment",
+                        "amount": 500.00,
+                        "currency": "EUR",
+                        "date": "2026-01-20T10:00:00Z",
+                        "transactionType": "INCOME",
+                        "transactionStability": "VARIABLE"
+                    }
+                    """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.transactionType").value("INCOME"));
+
+        // Verify expense total
+        mockMvc.perform(get("/v1/transactions/summary/expenses"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(75.50));
+
+        // Verify income total
+        mockMvc.perform(get("/v1/transactions/summary/income"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(500.00));
+
+        // ============================================================================
+        // US4: Transaction Stability (FIXED vs VARIABLE)
+        // ============================================================================
+
+        // Create FIXED transaction
+        mockMvc.perform(post("/v1/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "description": "Netflix subscription",
+                        "amount": 12.99,
+                        "currency": "EUR",
+                        "date": "2026-01-01T00:00:00Z",
+                        "transactionType": "EXPENSE",
+                        "transactionStability": "FIXED"
+                    }
+                    """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.transactionStability").value("FIXED"));
+
+        // Filter by FIXED stability
+        mockMvc.perform(get("/v1/transactions?stability=FIXED"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1))
+            .andExpect(jsonPath("$[0].description").value("Netflix subscription"));
+
+        // Filter by VARIABLE stability
+        mockMvc.perform(get("/v1/transactions?stability=VARIABLE"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(2)); // Doctor visit + Freelance payment
+
+        // ============================================================================
+        // US5: Migration - Old Endpoints Return 404
+        // ============================================================================
+
+        mockMvc.perform(get("/v1/expenses"))
+            .andExpect(status().isNotFound());
+
+        mockMvc.perform(post("/v1/expenses")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"description\":\"test\"}"))
+            .andExpect(status().isNotFound());
+
+        // ============================================================================
+        // Final Verification
+        // ============================================================================
+
+        // Verify database state
+        assertThat(categoryRepository.count()).isGreaterThanOrEqualTo(15); // 14 predefined + Others + Medical
+        assertThat(transactionRepository.count()).isEqualTo(3); // Doctor, Freelance, Netflix
+
+        // Verify all transactions are retrievable
+        mockMvc.perform(get("/v1/transactions"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(3));
+    }
+
+    /**
+     * Helper method to extract "id" field from JSON response.
+     */
+    private String extractId(String jsonResponse) {
+        int idStart = jsonResponse.indexOf("\"id\":\"") + 6;
+        int idEnd = jsonResponse.indexOf("\"", idStart);
+        return jsonResponse.substring(idStart, idEnd);
+    }
+}

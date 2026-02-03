@@ -1,0 +1,724 @@
+openapi: 3.0.3
+info:
+  title: MoneyTrak API - Transaction Categories and Types
+  description: |
+    RESTful API for managing financial transactions with categories, transaction types (EXPENSE/INCOME),
+    and transaction stability (FIXED/VARIABLE).
+
+    **Breaking Changes**:
+    - Renamed `/v1/expenses` to `/v1/transactions`
+    - Added `transactionType` enum (EXPENSE, INCOME)
+    - Added `transactionStability` enum (FIXED, VARIABLE)
+    - Added `categoryId` foreign key to Category
+
+    **New Endpoints**:
+    - Category CRUD operations at `/v1/categories`
+  version: 2.0.0
+  contact:
+    name: MoneyTrak API Support
+    email: support@moneytrak.dev
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  # Category Management Endpoints
+  /v1/categories:
+    get:
+      summary: List all categories
+      description: Retrieves all categories (predefined and custom) ordered by name
+      operationId: listCategories
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: Successful response with list of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryDto'
+              example:
+                - id: "550e8400-e29b-41d4-a716-446655440000"
+                  name: "Food & Drinks"
+                  isPredefined: true
+                  createdAt: "2026-01-01T00:00:00Z"
+                  updatedAt: "2026-01-01T00:00:00Z"
+                - id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+                  name: "Medical Expenses"
+                  isPredefined: false
+                  createdAt: "2026-01-15T10:30:00Z"
+                  updatedAt: "2026-01-15T10:30:00Z"
+    post:
+      summary: Create a new category
+      description: Creates a custom category with a unique name
+      operationId: createCategory
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreationDto'
+            example:
+              name: "Medical Expenses"
+      responses:
+        '201':
+          description: Category created successfully
+          headers:
+            Location:
+              description: URI of the created category
+              schema:
+                type: string
+                example: "/v1/categories/6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDto'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: Category with this name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 409
+                error: "Conflict"
+                message: "Category with name 'Medical Expenses' already exists"
+                timestamp: "2026-01-19T10:30:00Z"
+
+  /v1/categories/{id}:
+    get:
+      summary: Get category by ID
+      description: Retrieves a single category by its unique identifier
+      operationId: getCategoryById
+      tags:
+        - Categories
+      parameters:
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '200':
+          description: Category found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDto'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Update category name
+      description: Updates the name of an existing category (both predefined and custom can be renamed)
+      operationId: updateCategory
+      tags:
+        - Categories
+      parameters:
+        - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdateDto'
+            example:
+              name: "Fuel"
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryDto'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Another category with this name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete category
+      description: Deletes a category if it has no associated transactions
+      operationId: deleteCategory
+      tags:
+        - Categories
+      parameters:
+        - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '204':
+          description: Category deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Category has associated transactions and cannot be deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 409
+                error: "Conflict"
+                message: "Cannot delete category with 15 associated transactions"
+                timestamp: "2026-01-19T10:30:00Z"
+
+  # Transaction Management Endpoints
+  /v1/transactions:
+    get:
+      summary: List all transactions
+      description: |
+        Retrieves all transactions ordered by date (reverse chronological).
+        Optionally filter by category, transaction type, or transaction stability.
+      operationId: listTransactions
+      tags:
+        - Transactions
+      parameters:
+        - name: categoryId
+          in: query
+          description: Filter by category ID
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: transactionType
+          in: query
+          description: Filter by transaction type
+          required: false
+          schema:
+            $ref: '#/components/schemas/TransactionType'
+        - name: transactionStability
+          in: query
+          description: Filter by transaction stability
+          required: false
+          schema:
+            $ref: '#/components/schemas/TransactionStability'
+      responses:
+        '200':
+          description: Successful response with list of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDto'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          description: Category not found (when filtering by categoryId)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new transaction
+      description: Records a new financial transaction with category, type, and stability
+      operationId: createTransaction
+      tags:
+        - Transactions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionCreationDto'
+            examples:
+              expense:
+                summary: Variable expense example
+                value:
+                  description: "Groceries at Supermarket"
+                  amount: 45.30
+                  currency: "EUR"
+                  date: "2026-01-19T10:00:00Z"
+                  transactionType: "EXPENSE"
+                  transactionStability: "VARIABLE"
+                  categoryId: "550e8400-e29b-41d4-a716-446655440000"
+              income:
+                summary: Fixed income example
+                value:
+                  description: "Monthly Salary"
+                  amount: 3000.00
+                  currency: "EUR"
+                  date: "2026-01-01T00:00:00Z"
+                  transactionType: "INCOME"
+                  transactionStability: "FIXED"
+                  categoryId: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+      responses:
+        '201':
+          description: Transaction created successfully
+          headers:
+            Location:
+              description: URI of the created transaction
+              schema:
+                type: string
+                example: "/v1/transactions/7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionDto'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /v1/transactions/{id}:
+    get:
+      summary: Get transaction by ID
+      description: Retrieves a single transaction by its unique identifier
+      operationId: getTransactionById
+      tags:
+        - Transactions
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+      responses:
+        '200':
+          description: Transaction found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionDto'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Update transaction
+      description: Updates an existing transaction with optimistic locking
+      operationId: updateTransaction
+      tags:
+        - Transactions
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionUpdateDto'
+            example:
+              description: "Groceries and household items"
+              amount: 52.40
+              currency: "EUR"
+              date: "2026-01-19T10:00:00Z"
+              transactionType: "EXPENSE"
+              transactionStability: "VARIABLE"
+              categoryId: "550e8400-e29b-41d4-a716-446655440000"
+              version: 0
+      responses:
+        '200':
+          description: Transaction updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionDto'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Optimistic lock version mismatch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 409
+                error: "Conflict"
+                message: "Transaction was modified by another user. Please refresh and try again."
+                timestamp: "2026-01-19T10:30:00Z"
+    delete:
+      summary: Delete transaction
+      description: Permanently deletes a transaction
+      operationId: deleteTransaction
+      tags:
+        - Transactions
+      parameters:
+        - $ref: '#/components/parameters/TransactionId'
+      responses:
+        '204':
+          description: Transaction deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/transactions/summary/expenses:
+    get:
+      summary: Get total expenses
+      description: Calculates the sum of all EXPENSE transactions
+      operationId: getExpenseTotal
+      tags:
+        - Transactions
+      responses:
+        '200':
+          description: Total expense amount
+          content:
+            application/json:
+              schema:
+                type: number
+                format: decimal
+                example: 3500.50
+
+  /v1/transactions/summary/income:
+    get:
+      summary: Get total income
+      description: Calculates the sum of all INCOME transactions
+      operationId: getIncomeTotal
+      tags:
+        - Transactions
+      responses:
+        '200':
+          description: Total income amount
+          content:
+            application/json:
+              schema:
+                type: number
+                format: decimal
+                example: 3000.00
+
+components:
+  parameters:
+    CategoryId:
+      name: id
+      in: path
+      description: Category unique identifier
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "550e8400-e29b-41d4-a716-446655440000"
+    TransactionId:
+      name: id
+      in: path
+      description: Transaction unique identifier
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+
+  schemas:
+    # Category Schemas
+    CategoryDto:
+      type: object
+      required:
+        - id
+        - name
+        - isPredefined
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          maxLength: 100
+          description: Category name (unique, case-insensitive)
+          example: "Food & Drinks"
+        isPredefined:
+          type: boolean
+          description: True for system-seeded categories, false for user-created
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Record creation timestamp (UTC)
+          example: "2026-01-01T00:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp (UTC)
+          example: "2026-01-01T00:00:00Z"
+
+    CategoryCreationDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Category name (must be unique, case-insensitive)
+          example: "Medical Expenses"
+
+    CategoryUpdateDto:
+      type: object
+      required:
+        - name
+        - version
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: New category name (must be unique, case-insensitive)
+          example: "Healthcare"
+        version:
+          type: integer
+          description: Current optimistic locking version (for concurrency control)
+          example: 0
+
+    # Transaction Schemas
+    TransactionDto:
+      type: object
+      required:
+        - id
+        - description
+        - amount
+        - currency
+        - date
+        - transactionType
+        - transactionStability
+        - category
+        - version
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+        description:
+          type: string
+          maxLength: 500
+          description: Transaction description
+          example: "REGUS BUSINESS CENTRE"
+        amount:
+          type: number
+          format: decimal
+          minimum: 0.01
+          multipleOf: 0.01
+          description: Positive amount (type determines direction)
+          example: 30.75
+        currency:
+          type: string
+          pattern: "^[A-Z]{3}$"
+          description: ISO 4217 currency code
+          example: "EUR"
+        date:
+          type: string
+          format: date-time
+          description: Transaction date (past or present, stored in UTC)
+          example: "2026-01-12T00:00:00Z"
+        transactionType:
+          $ref: '#/components/schemas/TransactionType'
+        transactionStability:
+          $ref: '#/components/schemas/TransactionStability'
+        category:
+          $ref: '#/components/schemas/CategoryDto'
+        version:
+          type: integer
+          description: Optimistic locking version
+          example: 0
+        createdAt:
+          type: string
+          format: date-time
+          description: Record creation timestamp (UTC)
+          example: "2026-01-12T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp (UTC)
+          example: "2026-01-12T10:30:00Z"
+
+    TransactionCreationDto:
+      type: object
+      required:
+        - description
+        - amount
+        - currency
+        - date
+      properties:
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Transaction description
+          example: "Groceries at Supermarket"
+        amount:
+          type: number
+          format: decimal
+          minimum: 0.01
+          multipleOf: 0.01
+          description: Positive amount (must be > 0, max 9 integer digits, 2 decimal places)
+          example: 45.30
+        currency:
+          type: string
+          pattern: "^[A-Z]{3}$"
+          description: ISO 4217 currency code
+          example: "EUR"
+        date:
+          type: string
+          format: date-time
+          description: Transaction date (cannot be in the future)
+          example: "2026-01-19T10:00:00Z"
+        transactionType:
+          $ref: '#/components/schemas/TransactionType'
+        transactionStability:
+          $ref: '#/components/schemas/TransactionStability'
+        categoryId:
+          type: string
+          format: uuid
+          description: Category ID (optional, defaults to "Others" if not provided)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    TransactionUpdateDto:
+      type: object
+      required:
+        - description
+        - amount
+        - currency
+        - date
+        - transactionType
+        - transactionStability
+        - categoryId
+        - version
+      properties:
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: Transaction description
+          example: "Groceries and household items"
+        amount:
+          type: number
+          format: decimal
+          minimum: 0.01
+          multipleOf: 0.01
+          description: Positive amount
+          example: 52.40
+        currency:
+          type: string
+          pattern: "^[A-Z]{3}$"
+          description: ISO 4217 currency code
+          example: "EUR"
+        date:
+          type: string
+          format: date-time
+          description: Transaction date (cannot be in the future)
+          example: "2026-01-19T10:00:00Z"
+        transactionType:
+          $ref: '#/components/schemas/TransactionType'
+        transactionStability:
+          $ref: '#/components/schemas/TransactionStability'
+        categoryId:
+          type: string
+          format: uuid
+          description: Category ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        version:
+          type: integer
+          description: Current optimistic locking version (for concurrency control)
+          example: 0
+
+    # Enums
+    TransactionType:
+      type: string
+      enum:
+        - EXPENSE
+        - INCOME
+      description: |
+        Transaction type determines the direction of money flow:
+        - EXPENSE: Money going out
+        - INCOME: Money coming in
+      example: "EXPENSE"
+
+    TransactionStability:
+      type: string
+      enum:
+        - FIXED
+        - VARIABLE
+      description: |
+        Transaction stability classifies predictability:
+        - FIXED: Recurring, predictable (e.g., salary, subscriptions)
+        - VARIABLE: One-time, unpredictable (e.g., groceries, freelance income)
+      example: "VARIABLE"
+
+    # Error Schemas
+    ErrorResponse:
+      type: object
+      required:
+        - status
+        - error
+        - message
+        - timestamp
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        error:
+          type: string
+          description: Error type
+          example: "Bad Request"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Validation failed"
+        details:
+          type: array
+          description: Field-level validation errors (optional)
+          items:
+            $ref: '#/components/schemas/FieldError'
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp (UTC)
+          example: "2026-01-19T10:30:00Z"
+
+    FieldError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          description: Field name with validation error
+          example: "amount"
+        rejectedValue:
+          description: Invalid value that was rejected (optional)
+          example: -30.75
+        message:
+          type: string
+          description: Validation error message
+          example: "Amount must be greater than zero"
+
+  responses:
+    ValidationError:
+      description: Validation error with field-level details
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: 400
+            error: "Bad Request"
+            message: "Validation failed"
+            details:
+              - field: "amount"
+                rejectedValue: -30.75
+                message: "Amount must be greater than zero"
+              - field: "date"
+                rejectedValue: "2027-01-01T00:00:00Z"
+                message: "Date cannot be in the future"
+            timestamp: "2026-01-19T10:30:00Z"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: 404
+            error: "Not Found"
+            message: "Category not found with id: 550e8400-e29b-41d4-a716-446655440000"
+            timestamp: "2026-01-19T10:30:00Z"
+
+tags:
+  - name: Categories
+    description: Category management operations
+  - name: Transactions
+    description: Transaction management operations (replaces /v1/expenses)

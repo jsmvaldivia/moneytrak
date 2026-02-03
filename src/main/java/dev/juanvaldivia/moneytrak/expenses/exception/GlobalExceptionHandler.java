@@ -1,5 +1,6 @@
 package dev.juanvaldivia.moneytrak.expenses.exception;
 
+import dev.juanvaldivia.moneytrak.categories.exception.CategoryInUseException;
 import dev.juanvaldivia.moneytrak.expenses.dto.ErrorResponseDto;
 import dev.juanvaldivia.moneytrak.expenses.dto.FieldErrorDto;
 import jakarta.persistence.OptimisticLockException;
@@ -13,14 +14,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Global exception handler for all expense-related REST endpoints.
+ * Global exception handler for all REST endpoints (expenses, transactions, categories).
  * Provides consistent error response format across all API endpoints.
  *
  * <p>Error responses follow the format: {status, error, message, details[]}
  */
-@RestControllerAdvice(basePackages = "dev.juanvaldivia.moneytrak.expenses")
-public class
-GlobalExceptionHandler {
+@RestControllerAdvice(basePackages = {
+    "dev.juanvaldivia.moneytrak.expenses",
+    "dev.juanvaldivia.moneytrak.transactions",
+    "dev.juanvaldivia.moneytrak.categories"
+})
+public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDto> handleValidationException(MethodArgumentNotValidException ex) {
@@ -51,12 +55,17 @@ GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler({OptimisticLockException.class, ConflictException.class})
+    @ExceptionHandler({OptimisticLockException.class, ConflictException.class, CategoryInUseException.class})
     public ResponseEntity<ErrorResponseDto> handleConflictException(Exception ex) {
+        String message = ex.getMessage();
+        if (message == null || message.isEmpty()) {
+            message = "Version mismatch: resource has been modified";
+        }
+
         ErrorResponseDto errorResponse = new ErrorResponseDto(
             HttpStatus.CONFLICT.value(),
             "Conflict",
-            "Version mismatch: expense has been modified",
+            message,
             List.of()
         );
 
