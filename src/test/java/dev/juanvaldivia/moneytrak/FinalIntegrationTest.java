@@ -27,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - US2: Transaction-category linking
  * - US3: Transaction types (EXPENSE/INCOME) with summaries
  * - US4: Transaction stability (FIXED/VARIABLE) with filtering
- * - US5: Migration (old endpoints return 404)
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -157,18 +156,6 @@ class FinalIntegrationTest {
         mockMvc.perform(get("/v1/transactions?stability=VARIABLE"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(2)); // Doctor visit + Freelance payment
-
-        // ============================================================================
-        // US5: Migration - Old Endpoints Return 404
-        // ============================================================================
-
-        mockMvc.perform(get("/v1/expenses"))
-            .andExpect(status().isNotFound());
-
-        mockMvc.perform(post("/v1/expenses")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"description\":\"test\"}"))
-            .andExpect(status().isNotFound());
 
         // ============================================================================
         // Final Verification

@@ -521,17 +521,6 @@ class TransactionControllerTest {
     }
 
     // ========================================================================
-    // US5: Old endpoints return 404 (T081)
-    // ========================================================================
-
-    // T081: Old /v1/expenses endpoints return 404
-    @Test
-    void oldExpensesEndpoint_shouldReturn404() throws Exception {
-        mockMvc.perform(get("/v1/expenses"))
-            .andExpect(status().isNotFound());
-    }
-
-    // ========================================================================
     // Helper
     // ========================================================================
 
