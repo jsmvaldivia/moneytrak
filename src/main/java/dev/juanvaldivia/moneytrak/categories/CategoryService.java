@@ -18,7 +18,7 @@ public interface CategoryService {
      *
      * @param dto category creation data
      * @return created category DTO
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.ConflictException if category name already exists
+     * @throws dev.juanvaldivia.moneytrak.exception.ConflictException if category name already exists
      */
     CategoryDto create(CategoryCreationDto dto);
 
@@ -34,7 +34,7 @@ public interface CategoryService {
      *
      * @param id category UUID
      * @return category DTO
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if category not found
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if category not found
      */
     CategoryDto findById(UUID id);
 
@@ -44,8 +44,8 @@ public interface CategoryService {
      * @param id category UUID
      * @param dto update data with new name and version
      * @return updated category DTO
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if category not found
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.ConflictException if name already exists or version mismatch
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if category not found
+     * @throws dev.juanvaldivia.moneytrak.exception.ConflictException if name already exists or version mismatch
      */
     CategoryDto update(UUID id, CategoryUpdateDto dto);
 
@@ -54,7 +54,7 @@ public interface CategoryService {
      * Only allowed if category has no linked transactions.
      *
      * @param id category UUID
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if category not found
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if category not found
      * @throws dev.juanvaldivia.moneytrak.categories.exception.CategoryInUseException if category has linked transactions
      */
     void delete(UUID id);

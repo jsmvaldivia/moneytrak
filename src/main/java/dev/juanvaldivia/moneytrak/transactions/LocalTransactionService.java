@@ -2,8 +2,8 @@ package dev.juanvaldivia.moneytrak.transactions;
 
 import dev.juanvaldivia.moneytrak.categories.Category;
 import dev.juanvaldivia.moneytrak.categories.CategoryRepository;
-import dev.juanvaldivia.moneytrak.expenses.exception.ConflictException;
-import dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException;
+import dev.juanvaldivia.moneytrak.exception.ConflictException;
+import dev.juanvaldivia.moneytrak.exception.NotFoundException;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionCreationDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionUpdateDto;

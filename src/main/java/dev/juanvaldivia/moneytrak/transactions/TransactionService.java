@@ -21,7 +21,7 @@ public interface TransactionService {
      *
      * @param dto transaction creation data
      * @return created transaction with category details
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if category not found
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if category not found
      */
     TransactionDto createTransaction(TransactionCreationDto dto);
 
@@ -45,7 +45,7 @@ public interface TransactionService {
      *
      * @param id transaction UUID
      * @return transaction details with category information
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if not found
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if not found
      */
     TransactionDto getTransactionById(UUID id);
 
@@ -56,8 +56,8 @@ public interface TransactionService {
      * @param id transaction UUID
      * @param dto update data including version
      * @return updated transaction
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if transaction or category not found
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.ConflictException if version mismatch
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if transaction or category not found
+     * @throws dev.juanvaldivia.moneytrak.exception.ConflictException if version mismatch
      */
     TransactionDto updateTransaction(UUID id, TransactionUpdateDto dto);
 
@@ -65,7 +65,7 @@ public interface TransactionService {
      * Delete transaction by ID.
      *
      * @param id transaction UUID
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if not found
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if not found
      */
     void deleteTransaction(UUID id);
 

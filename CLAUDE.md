@@ -36,9 +36,8 @@ This project uses Maven wrapper (`mvnw`). All commands use `./mvnw` on macOS/Lin
 The codebase follows a feature-based package structure under `dev.juanvaldivia.moneytrak`:
 - `transactions/` - Transaction management feature (income and expenses) with controller, service, domain models, DTOs, and enums
 - `categories/` - Category management feature for organizing transactions
-- `expenses/exception/` - Shared exception handling infrastructure (GlobalExceptionHandler)
-- `expenses/validation/` - Custom validation annotations (e.g., @ValidCurrency)
-- `expenses/dto/` - Shared error response DTOs
+- `exception/` - Shared exception handling infrastructure (GlobalExceptionHandler, NotFoundException, ConflictException, error DTOs)
+- `validation/` - Custom validation annotations (e.g., @ValidCurrency)
 
 ### Core Patterns
 

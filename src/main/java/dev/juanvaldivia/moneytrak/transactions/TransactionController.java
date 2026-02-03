@@ -89,7 +89,7 @@ public class TransactionController {
      *
      * @param id transaction UUID
      * @return 200 OK with transaction details including category info
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if not found (404)
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if not found (404)
      */
     @GetMapping("/{id}")
     public ResponseEntity<TransactionDto> getTransaction(@PathVariable UUID id) {
@@ -107,8 +107,8 @@ public class TransactionController {
      * @param id transaction UUID
      * @param dto update data with version for optimistic locking
      * @return 200 OK with updated transaction
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if transaction or category not found (404)
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.ConflictException if version mismatch (409)
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if transaction or category not found (404)
+     * @throws dev.juanvaldivia.moneytrak.exception.ConflictException if version mismatch (409)
      */
     @PutMapping("/{id}")
     public ResponseEntity<TransactionDto> updateTransaction(
@@ -125,7 +125,7 @@ public class TransactionController {
      *
      * @param id transaction UUID
      * @return 204 No Content
-     * @throws dev.juanvaldivia.moneytrak.expenses.exception.NotFoundException if not found (404)
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if not found (404)
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable UUID id) {

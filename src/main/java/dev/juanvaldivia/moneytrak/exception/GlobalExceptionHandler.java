@@ -1,8 +1,6 @@
-package dev.juanvaldivia.moneytrak.expenses.exception;
+package dev.juanvaldivia.moneytrak.exception;
 
 import dev.juanvaldivia.moneytrak.categories.exception.CategoryInUseException;
-import dev.juanvaldivia.moneytrak.expenses.dto.ErrorResponseDto;
-import dev.juanvaldivia.moneytrak.expenses.dto.FieldErrorDto;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,13 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Global exception handler for all REST endpoints (expenses, transactions, categories).
+ * Global exception handler for all REST endpoints (transactions, categories).
  * Provides consistent error response format across all API endpoints.
  *
  * <p>Error responses follow the format: {status, error, message, details[]}
  */
 @RestControllerAdvice(basePackages = {
-    "dev.juanvaldivia.moneytrak.expenses",
+    "dev.juanvaldivia.moneytrak.exception",
     "dev.juanvaldivia.moneytrak.transactions",
     "dev.juanvaldivia.moneytrak.categories"
 })

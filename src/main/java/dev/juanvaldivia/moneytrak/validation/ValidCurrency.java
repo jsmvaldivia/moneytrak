@@ -1,4 +1,4 @@
-package dev.juanvaldivia.moneytrak.expenses.validation;
+package dev.juanvaldivia.moneytrak.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

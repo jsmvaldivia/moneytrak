@@ -1,4 +1,4 @@
-package dev.juanvaldivia.moneytrak.expenses.dto;
+package dev.juanvaldivia.moneytrak.exception;
 
 import java.util.List;
 

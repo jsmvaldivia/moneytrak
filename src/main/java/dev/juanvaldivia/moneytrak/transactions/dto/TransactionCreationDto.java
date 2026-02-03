@@ -1,6 +1,6 @@
 package dev.juanvaldivia.moneytrak.transactions.dto;
 
-import dev.juanvaldivia.moneytrak.expenses.validation.ValidCurrency;
+import dev.juanvaldivia.moneytrak.validation.ValidCurrency;
 import dev.juanvaldivia.moneytrak.transactions.TransactionStability;
 import dev.juanvaldivia.moneytrak.transactions.TransactionType;
 import jakarta.validation.constraints.*;

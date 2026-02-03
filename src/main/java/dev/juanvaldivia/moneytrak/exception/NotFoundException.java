@@ -1,4 +1,4 @@
-package dev.juanvaldivia.moneytrak.expenses.exception;
+package dev.juanvaldivia.moneytrak.exception;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {
