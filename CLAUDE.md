@@ -36,6 +36,7 @@ This project uses Maven wrapper (`mvnw`). All commands use `./mvnw` on macOS/Lin
 The codebase follows a feature-based package structure under `dev.juanvaldivia.moneytrak`:
 - `transactions/` - Transaction management feature (income and expenses) with controller, service, domain models, DTOs, and enums
 - `categories/` - Category management feature for organizing transactions
+- `security/` - Authentication and authorization infrastructure (SecurityConfig, SecurityProperties, SecurityUserDetailsService, CustomAuthEntryPoint, CustomAccessDeniedHandler)
 - `exception/` - Shared exception handling infrastructure (GlobalExceptionHandler, NotFoundException, ConflictException, error DTOs)
 - `validation/` - Custom validation annotations (e.g., @ValidCurrency)
 
@@ -110,9 +111,47 @@ REST endpoints are versioned using path prefix `/v1/` (e.g., `/v1/transactions`,
   - Predefined categories can be renamed but maintain isPredefined=true
 - `DELETE /v1/categories/{id}` - Delete category (returns 409 if transactions exist)
 
+### Authentication & Authorization
+HTTP Basic Authentication with three roles, configured via `application.yaml`:
+
+**Roles**:
+- **APP**: Read-only access to `/v1/**` endpoints (GET only)
+- **BACKOFFICE**: Full CRUD access to `/v1/**` endpoints (GET, POST, PUT, DELETE)
+- **ADMIN**: Full CRUD access + actuator endpoints + H2 console access
+
+**Role Permission Matrix**:
+
+| Operation | APP | BACKOFFICE | ADMIN |
+|-----------|-----|------------|-------|
+| GET /v1/** | Yes | Yes | Yes |
+| POST/PUT/DELETE /v1/** | No (403) | Yes | Yes |
+| GET /actuator/health | Public | Public | Public |
+| GET /actuator/** (other) | No (403) | No (403) | Yes |
+| /h2-console/** | No (403) | No (403) | Yes |
+
+**Configuration**: Users defined in `moneytrak.security.users` with BCrypt-hashed passwords (production) or `{noop}` plaintext (test profile). Uses `InMemoryUserDetailsManager` — no database table.
+
+**Security Classes** (`security/` package):
+- `SecurityConfig` - `SecurityFilterChain` bean with URL-based authorization rules
+- `SecurityProperties` - `@ConfigurationProperties` record for user configuration
+- `SecurityUserDetailsService` - Maps config users to Spring `UserDetails`
+- `CustomAuthEntryPoint` - JSON 401 responses + failed auth logging (FR-014)
+- `CustomAccessDeniedHandler` - JSON 403 responses
+
+**Error Responses**: Auth errors use existing `ErrorResponseDto` format:
+- 401 Unauthorized: `{status: 401, error: "Unauthorized", message: "Authentication required. Provide valid credentials.", details: []}`
+- 403 Forbidden: `{status: 403, error: "Forbidden", message: "Access denied. Insufficient permissions for this operation.", details: []}`
+
+**Test Users** (application-test.yaml):
+- `app-client` / `app-client` (role: APP)
+- `backoffice` / `backoffice` (role: BACKOFFICE)
+- `admin` / `admin` (role: ADMIN)
+
 ### Error Handling
 Global exception handler (`@RestControllerAdvice`) provides consistent error responses:
 - 400 Bad Request - Validation errors with field-level details
+- 401 Unauthorized - Missing or invalid credentials (via CustomAuthEntryPoint)
+- 403 Forbidden - Valid credentials but insufficient role permissions (via CustomAccessDeniedHandler)
 - 404 Not Found - Resource not found (transaction, category, invalid category reference)
 - 409 Conflict - Optimistic lock version mismatch, category in use (cannot delete), duplicate category name
 - 500 Internal Server Error - Unexpected errors
@@ -134,6 +173,7 @@ Uses JPA `@Version` field with automatic increment:
 
 ## Active Technologies
 - Java 25 + Spring Boot 4.0.1
+- Spring Security 7.0.2 (via `spring-boot-starter-security`) — HTTP Basic Authentication
 - Spring Web MVC, Spring Data JPA, Jakarta Validation
 - H2 database (file-based for persistence, in-memory for tests)
 - Hibernate ORM 7.2.0 with optimistic locking
@@ -155,17 +195,33 @@ Uses JPA `@Version` field with automatic increment:
 1. Office Renting, 2. Public Transport, 3. Bank, 4. Car Maintenance, 5. Food & Drinks, 6. Subscriptions, 7. Supermarket, 8. Tolls, 9. Gas, 10. Sport, 11. Gifts, 12. ATM, 13. Video & Films, 14. Transfers, 15. **Others** (default)
 
 ## Test Coverage
-- 40 integration tests covering all features
+- 63 integration tests covering all features
   - 7 category controller tests (CRUD, deletion validation, uniqueness)
   - 1 category integration test (seeding verification)
-  - 20 transaction controller tests (US2 category linking, US3 types, US4 stability, US5 old endpoints)
-  - 5 data migration tests (default values, field preservation, zero data loss)
-  - 5 expense endpoint removal tests (old /v1/expenses returns 404)
-  - 1 final integration test (end-to-end all 5 user stories)
+  - 19 transaction controller tests (category linking, types, stability)
+  - 1 final integration test (end-to-end all user stories)
   - 1 application context test
+  - 2 security smoke tests (basic auth/no-auth)
+  - 32 security integration tests:
+    - 6 US1 authentication tests (no-auth 401, invalid credentials, valid credentials, malformed header)
+    - 10 US2 APP role tests (read-only access, write operations return 403)
+    - 8 US3 BACKOFFICE role tests (full CRUD, actuator denied)
+    - 4 US4 ADMIN role tests (actuator access, full CRUD)
+    - 3 US5 health check tests (public health endpoint, other endpoints require auth)
+    - 1 failed auth logging test (401 response format validation)
 - Test profiles: `test` (in-memory H2), `default` (file-based H2)
 
 ## Recent Changes
+- **003-simple-auth**: Complete role-based authentication implementation
+  - HTTP Basic Authentication with 3 roles: APP (read-only), BACKOFFICE (full CRUD), ADMIN (full access + actuator)
+  - Config-based users via `@ConfigurationProperties` with BCrypt password hashing
+  - URL-based authorization rules in centralized `SecurityFilterChain`
+  - Custom JSON error responses for 401/403 matching existing `ErrorResponseDto` format
+  - Failed authentication logging (username, IP, timestamp) at WARN level
+  - Health endpoint (`/actuator/health`) remains publicly accessible
+  - 32 new security integration tests covering all acceptance scenarios
+  - All 31 existing tests pass (zero regressions)
+  - Required `spring-boot-starter-security-test` for Spring Boot 4 MockMvc + security integration
 - **002-transaction-categories**: Complete transaction categories and types implementation
   - User Story 1: Category management (CRUD, 14 predefined categories)
   - User Story 2: Transaction-category linking with default "Others" assignment
@@ -175,7 +231,6 @@ Uses JPA `@Version` field with automatic increment:
   - Flyway database migrations with zero data loss
   - All old /v1/expenses endpoints removed (404 Not Found)
   - New /v1/transactions and /v1/categories endpoints with filtering
-- **001-expense-tracking**: Complete CRUD implementation with optimistic locking
   - All 4 user stories implemented (Create, Retrieve, Update, Delete)
   - 32 passing integration tests
   - JavaDoc added to public APIs

@@ -21,6 +21,28 @@ spring:
       hibernate:
         format_sql: true
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+moneytrak:
+  security:
+    users:
+      - username: app-client
+        password: "{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW"
+        role: APP
+      - username: backoffice
+        password: "{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW"
+        role: BACKOFFICE
+      - username: admin
+        password: "{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW"
+        role: ADMIN
+
 logging:
   level:
     org.springframework.boot.autoconfigure.h2: DEBUG
