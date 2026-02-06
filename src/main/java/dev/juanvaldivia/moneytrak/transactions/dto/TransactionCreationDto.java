@@ -1,6 +1,6 @@
 package dev.juanvaldivia.moneytrak.transactions.dto;
 
-import dev.juanvaldivia.moneytrak.validation.ValidCurrency;
+import dev.juanvaldivia.moneytrak.validation.Currency;
 import dev.juanvaldivia.moneytrak.transactions.TransactionStability;
 import dev.juanvaldivia.moneytrak.transactions.TransactionType;
 import jakarta.validation.constraints.*;
@@ -34,13 +34,14 @@ public record TransactionCreationDto(
     BigDecimal amount,
 
     @NotNull(message = "Currency is required")
-    @ValidCurrency
+    @Currency
     String currency,
 
     @NotNull(message = "Date is required")
     @PastOrPresent(message = "Date must not be in the future")
     ZonedDateTime date,
 
+    @NotNull(message = "Type is required")
     TransactionType type,
 
     TransactionStability stability,

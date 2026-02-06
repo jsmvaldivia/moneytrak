@@ -53,7 +53,7 @@ class TransactionControllerTest {
                         "amount": 23.70,
                         "currency": "EUR",
                         "date": "2026-01-15T12:00:00Z",
-                        "transactionType": "EXPENSE",
+                        "type": "EXPENSE",
                         "stability": "VARIABLE",
                         "categoryId": "%s"
                     }
@@ -80,7 +80,7 @@ class TransactionControllerTest {
                         "amount": 5.50,
                         "currency": "EUR",
                         "date": "2026-01-10T08:00:00Z",
-                        "transactionType": "EXPENSE",
+                        "type": "EXPENSE",
                         "stability": "VARIABLE",
                         "categoryId": "%s"
                     }
@@ -117,7 +117,7 @@ class TransactionControllerTest {
                         "amount": 3.00,
                         "currency": "EUR",
                         "date": "2026-01-05T09:00:00Z",
-                        "transactionType": "EXPENSE",
+                        "type": "EXPENSE",
                         "categoryId": "%s"
                     }
                     """.formatted(bankCategory.getId())))
@@ -142,7 +142,7 @@ class TransactionControllerTest {
                         "amount": 65.40,
                         "currency": "EUR",
                         "date": "2026-01-18T10:00:00Z",
-                        "transactionType": "EXPENSE",
+                        "type": "EXPENSE",
                         "categoryId": "%s"
                     }
                     """.formatted(supermarket.getId())))
@@ -184,7 +184,7 @@ class TransactionControllerTest {
                         "amount": 10.00,
                         "currency": "EUR",
                         "date": "2026-01-20T14:00:00Z",
-                        "transactionType": "EXPENSE"
+                        "type": "EXPENSE"
                     }
                     """))
             .andExpect(status().isCreated())

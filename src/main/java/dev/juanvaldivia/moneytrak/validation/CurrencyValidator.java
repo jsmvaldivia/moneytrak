@@ -2,9 +2,8 @@ package dev.juanvaldivia.moneytrak.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import java.util.Currency;
 
-public class CurrencyValidator implements ConstraintValidator<ValidCurrency, String> {
+public class CurrencyValidator implements ConstraintValidator<Currency, String> {
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
@@ -13,7 +12,7 @@ public class CurrencyValidator implements ConstraintValidator<ValidCurrency, Str
         }
 
         try {
-            Currency.getInstance(value);
+            java.util.Currency.getInstance(value);
             return true;
         } catch (IllegalArgumentException e) {
             return false;  // Invalid ISO 4217 code

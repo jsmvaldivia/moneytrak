@@ -30,7 +30,7 @@ public class TransactionMapper {
             dto.amount(),
             dto.currency(),
             dto.date(),
-            dto.type() != null ? dto.type() : TransactionType.EXPENSE,
+            dto.type(),
             dto.stability() != null ? dto.stability() : TransactionStability.VARIABLE,
             category
         );

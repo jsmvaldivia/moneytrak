@@ -1,6 +1,6 @@
 package dev.juanvaldivia.moneytrak.transactions.dto;
 
-import dev.juanvaldivia.moneytrak.validation.ValidCurrency;
+import dev.juanvaldivia.moneytrak.validation.Currency;
 import dev.juanvaldivia.moneytrak.transactions.TransactionStability;
 import dev.juanvaldivia.moneytrak.transactions.TransactionType;
 import jakarta.validation.constraints.*;
@@ -30,7 +30,7 @@ public record TransactionUpdateDto(
     @Digits(integer = 9, fraction = 2, message = "Amount must have at most 2 decimal places")
     BigDecimal amount,
 
-    @ValidCurrency
+    @Currency
     String currency,
 
     @PastOrPresent(message = "Date must not be in the future")
