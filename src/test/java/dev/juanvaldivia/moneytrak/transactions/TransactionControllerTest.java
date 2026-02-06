@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser(roles = "ADMIN")
 class TransactionControllerTest {
 
     @Autowired
@@ -52,7 +54,7 @@ class TransactionControllerTest {
                         "currency": "EUR",
                         "date": "2026-01-15T12:00:00Z",
                         "transactionType": "EXPENSE",
-                        "transactionStability": "VARIABLE",
+                        "stability": "VARIABLE",
                         "categoryId": "%s"
                     }
                     """.formatted(foodCategory.getId())))
@@ -79,7 +81,7 @@ class TransactionControllerTest {
                         "currency": "EUR",
                         "date": "2026-01-10T08:00:00Z",
                         "transactionType": "EXPENSE",
-                        "transactionStability": "VARIABLE",
+                        "stability": "VARIABLE",
                         "categoryId": "%s"
                     }
                     """.formatted(tollsCategory.getId())))
@@ -204,11 +206,11 @@ class TransactionControllerTest {
                         "amount": 30.75,
                         "currency": "EUR",
                         "date": "2026-01-12T00:00:00Z",
-                        "transactionType": "EXPENSE"
+                        "type": "EXPENSE"
                     }
                     """))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.transactionType").value("EXPENSE"))
+            .andExpect(jsonPath("$.type").value("EXPENSE"))
             .andExpect(jsonPath("$.amount").value(30.75));
     }
 
@@ -223,11 +225,11 @@ class TransactionControllerTest {
                         "amount": 500.00,
                         "currency": "EUR",
                         "date": "2026-01-15T00:00:00Z",
-                        "transactionType": "INCOME"
+                        "type": "INCOME"
                     }
                     """))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.transactionType").value("INCOME"))
+            .andExpect(jsonPath("$.type").value("INCOME"))
             .andExpect(jsonPath("$.amount").value(500.00));
     }
 
@@ -242,7 +244,7 @@ class TransactionControllerTest {
                         "amount": -30.75,
                         "currency": "EUR",
                         "date": "2026-01-12T00:00:00Z",
-                        "transactionType": "EXPENSE"
+                        "type": "EXPENSE"
                     }
                     """))
             .andExpect(status().isBadRequest())
@@ -261,7 +263,7 @@ class TransactionControllerTest {
                         "amount": 50.00,
                         "currency": "EUR",
                         "date": "2026-01-10T00:00:00Z",
-                        "transactionType": "EXPENSE"
+                        "type": "EXPENSE"
                     }
                     """))
             .andExpect(status().isCreated());
@@ -275,7 +277,7 @@ class TransactionControllerTest {
                         "amount": 3000.00,
                         "currency": "EUR",
                         "date": "2026-01-01T00:00:00Z",
-                        "transactionType": "INCOME"
+                        "type": "INCOME"
                     }
                     """))
             .andExpect(status().isCreated());
@@ -298,7 +300,7 @@ class TransactionControllerTest {
                         "amount": 200.00,
                         "currency": "EUR",
                         "date": "2026-01-05T00:00:00Z",
-                        "transactionType": "INCOME"
+                        "type": "INCOME"
                     }
                     """))
             .andExpect(status().isCreated());
@@ -312,7 +314,7 @@ class TransactionControllerTest {
                         "amount": 4.50,
                         "currency": "EUR",
                         "date": "2026-01-05T10:00:00Z",
-                        "transactionType": "EXPENSE"
+                        "type": "EXPENSE"
                     }
                     """))
             .andExpect(status().isCreated());
@@ -334,7 +336,7 @@ class TransactionControllerTest {
                         "amount": 25.00,
                         "currency": "EUR",
                         "date": "2026-01-18T00:00:00Z",
-                        "transactionType": "EXPENSE"
+                        "type": "EXPENSE"
                     }
                     """))
             .andExpect(status().isCreated())
@@ -346,12 +348,12 @@ class TransactionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                        "transactionType": "INCOME",
+                        "type": "INCOME",
                         "version": 0
                     }
                     """))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.transactionType").value("INCOME"))
+            .andExpect(jsonPath("$.type").value("INCOME"))
             .andExpect(jsonPath("$.amount").value(25.00));
     }
 
@@ -372,14 +374,14 @@ class TransactionControllerTest {
                         "amount": 12.99,
                         "currency": "EUR",
                         "date": "2026-01-01T00:00:00Z",
-                        "transactionType": "EXPENSE",
-                        "transactionStability": "FIXED",
+                        "type": "EXPENSE",
+                        "stability": "FIXED",
                         "categoryId": "%s"
                     }
                     """.formatted(subscriptions.getId())))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.transactionType").value("EXPENSE"))
-            .andExpect(jsonPath("$.transactionStability").value("FIXED"));
+            .andExpect(jsonPath("$.type").value("EXPENSE"))
+            .andExpect(jsonPath("$.stability").value("FIXED"));
     }
 
     // T063: Creating EXPENSE transaction with VARIABLE stability
@@ -395,14 +397,14 @@ class TransactionControllerTest {
                         "amount": 55.00,
                         "currency": "EUR",
                         "date": "2026-01-14T09:00:00Z",
-                        "transactionType": "EXPENSE",
-                        "transactionStability": "VARIABLE",
+                        "type": "EXPENSE",
+                        "stability": "VARIABLE",
                         "categoryId": "%s"
                     }
                     """.formatted(gas.getId())))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.transactionType").value("EXPENSE"))
-            .andExpect(jsonPath("$.transactionStability").value("VARIABLE"));
+            .andExpect(jsonPath("$.type").value("EXPENSE"))
+            .andExpect(jsonPath("$.stability").value("VARIABLE"));
     }
 
     // T064: Creating INCOME transaction with FIXED stability
@@ -418,14 +420,14 @@ class TransactionControllerTest {
                         "amount": 3000.00,
                         "currency": "EUR",
                         "date": "2026-01-01T00:00:00Z",
-                        "transactionType": "INCOME",
-                        "transactionStability": "FIXED",
+                        "type": "INCOME",
+                        "stability": "FIXED",
                         "categoryId": "%s"
                     }
                     """.formatted(transfers.getId())))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.transactionType").value("INCOME"))
-            .andExpect(jsonPath("$.transactionStability").value("FIXED"));
+            .andExpect(jsonPath("$.type").value("INCOME"))
+            .andExpect(jsonPath("$.stability").value("FIXED"));
     }
 
     // T065: Default stability being VARIABLE when not specified
@@ -439,11 +441,11 @@ class TransactionControllerTest {
                         "amount": 99.99,
                         "currency": "EUR",
                         "date": "2026-01-20T16:00:00Z",
-                        "transactionType": "EXPENSE"
+                        "type": "EXPENSE"
                     }
                     """))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.transactionStability").value("VARIABLE"));
+            .andExpect(jsonPath("$.stability").value("VARIABLE"));
     }
 
     // T066: Filtering transactions by FIXED stability
@@ -458,8 +460,8 @@ class TransactionControllerTest {
                         "amount": 800.00,
                         "currency": "EUR",
                         "date": "2026-01-01T00:00:00Z",
-                        "transactionType": "EXPENSE",
-                        "transactionStability": "FIXED"
+                        "type": "EXPENSE",
+                        "stability": "FIXED"
                     }
                     """))
             .andExpect(status().isCreated());
@@ -473,8 +475,8 @@ class TransactionControllerTest {
                         "amount": 15.00,
                         "currency": "EUR",
                         "date": "2026-01-15T10:00:00Z",
-                        "transactionType": "EXPENSE",
-                        "transactionStability": "VARIABLE"
+                        "type": "EXPENSE",
+                        "stability": "VARIABLE"
                     }
                     """))
             .andExpect(status().isCreated());
@@ -483,7 +485,7 @@ class TransactionControllerTest {
         mockMvc.perform(get("/v1/transactions?stability=FIXED"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].transactionStability").value("FIXED"))
+            .andExpect(jsonPath("$[0].stability").value("FIXED"))
             .andExpect(jsonPath("$[0].description").value("Rent payment"));
     }
 
@@ -498,12 +500,12 @@ class TransactionControllerTest {
                         "amount": 120.00,
                         "currency": "EUR",
                         "date": "2026-01-01T00:00:00Z",
-                        "transactionType": "EXPENSE",
-                        "transactionStability": "FIXED"
+                        "type": "EXPENSE",
+                        "stability": "FIXED"
                     }
                     """))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.transactionStability").value("FIXED"))
+            .andExpect(jsonPath("$.stability").value("FIXED"))
             .andReturn().getResponse().getContentAsString();
 
         String txId = extractId(response);
@@ -512,12 +514,12 @@ class TransactionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                        "transactionStability": "VARIABLE",
+                        "stability": "VARIABLE",
                         "version": 0
                     }
                     """))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.transactionStability").value("VARIABLE"));
+            .andExpect(jsonPath("$.stability").value("VARIABLE"));
     }
 
     // ========================================================================

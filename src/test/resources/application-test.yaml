@@ -4,3 +4,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop  # Clean database per test
+
+moneytrak:
+  security:
+    users:
+      - username: app-client
+        password: "{noop}app-client"
+        role: APP
+      - username: backoffice
+        password: "{noop}backoffice"
+        role: BACKOFFICE
+      - username: admin
+        password: "{noop}admin"
+        role: ADMIN

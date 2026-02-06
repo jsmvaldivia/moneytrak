@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+import org.springframework.security.test.context.support.WithMockUser;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -32,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser(roles = "ADMIN")
 class FinalIntegrationTest {
 
     @Autowired
@@ -84,8 +87,8 @@ class FinalIntegrationTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.categoryId").value(categoryId))
             .andExpect(jsonPath("$.categoryName").value("Medical"))
-            .andExpect(jsonPath("$.transactionType").value("EXPENSE"))
-            .andExpect(jsonPath("$.transactionStability").value("VARIABLE"))
+            .andExpect(jsonPath("$.type").value("EXPENSE"))
+            .andExpect(jsonPath("$.stability").value("VARIABLE"))
             .andReturn().getResponse().getContentAsString();
 
         String transactionId = extractId(createTxResponse);
@@ -109,12 +112,12 @@ class FinalIntegrationTest {
                         "amount": 500.00,
                         "currency": "EUR",
                         "date": "2026-01-20T10:00:00Z",
-                        "transactionType": "INCOME",
-                        "transactionStability": "VARIABLE"
+                        "type": "INCOME",
+                        "stability": "VARIABLE"
                     }
                     """))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.transactionType").value("INCOME"));
+            .andExpect(jsonPath("$.type").value("INCOME"));
 
         // Verify expense total
         mockMvc.perform(get("/v1/transactions/summary/expenses"))
@@ -139,12 +142,12 @@ class FinalIntegrationTest {
                         "amount": 12.99,
                         "currency": "EUR",
                         "date": "2026-01-01T00:00:00Z",
-                        "transactionType": "EXPENSE",
-                        "transactionStability": "FIXED"
+                        "type": "EXPENSE",
+                        "stability": "FIXED"
                     }
                     """))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.transactionStability").value("FIXED"));
+            .andExpect(jsonPath("$.stability").value("FIXED"));
 
         // Filter by FIXED stability
         mockMvc.perform(get("/v1/transactions?stability=FIXED"))

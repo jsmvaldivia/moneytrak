@@ -1,6 +1,6 @@
 # MoneyTrak - Expense Tracking API
 
-A Spring Boot REST API for tracking expenses with validation, optimistic locking, and comprehensive error handling.
+A Spring Boot REST API for tracking expenses with validation.
 
 ## Features
 

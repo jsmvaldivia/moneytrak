@@ -56,7 +56,7 @@ public class TransactionController {
      * GET /v1/transactions?categoryId={uuid}&stability={FIXED|VARIABLE}
      *
      * Returns transactions ordered by date descending (newest first).
-     * Supports filtering by categoryId and/or transactionStability.
+     * Supports filtering by categoryId and/or stability.
      * Returns empty array if valid filters have no matching transactions.
      *
      * @param categoryId optional category UUID for filtering
