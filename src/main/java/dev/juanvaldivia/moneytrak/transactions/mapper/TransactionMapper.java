@@ -30,8 +30,8 @@ public class TransactionMapper {
             dto.amount(),
             dto.currency(),
             dto.date(),
-            dto.transactionType() != null ? dto.transactionType() : TransactionType.EXPENSE,
-            dto.transactionStability() != null ? dto.transactionStability() : TransactionStability.VARIABLE,
+            dto.type() != null ? dto.type() : TransactionType.EXPENSE,
+            dto.stability() != null ? dto.stability() : TransactionStability.VARIABLE,
             category
         );
     }
@@ -51,8 +51,8 @@ public class TransactionMapper {
             dto.amount() != null ? dto.amount() : existing.amount(),
             dto.currency() != null ? dto.currency() : existing.currency(),
             dto.date() != null ? dto.date() : existing.date(),
-            dto.transactionType() != null ? dto.transactionType() : existing.transactionType(),
-            dto.transactionStability() != null ? dto.transactionStability() : existing.transactionStability(),
+            dto.type() != null ? dto.type() : existing.transactionType(),
+            dto.stability() != null ? dto.stability() : existing.transactionStability(),
             newCategory != null ? newCategory : existing.category()
         );
     }

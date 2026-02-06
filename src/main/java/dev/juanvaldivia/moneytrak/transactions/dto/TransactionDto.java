@@ -16,8 +16,8 @@ import java.util.UUID;
  * @param amount positive amount
  * @param currency ISO 4217 currency code
  * @param date transaction date
- * @param transactionType EXPENSE or INCOME
- * @param transactionStability FIXED or VARIABLE
+ * @param type EXPENSE or INCOME
+ * @param stability FIXED or VARIABLE
  * @param categoryId linked category ID
  * @param categoryName linked category name
  * @param version optimistic locking version
@@ -30,8 +30,8 @@ public record TransactionDto(
     BigDecimal amount,
     String currency,
     ZonedDateTime date,
-    TransactionType transactionType,
-    TransactionStability transactionStability,
+    TransactionType type,
+    TransactionStability stability,
     UUID categoryId,
     String categoryName,
     Integer version,

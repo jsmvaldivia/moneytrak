@@ -19,8 +19,8 @@ import java.util.UUID;
  * @param amount positive amount (required)
  * @param currency ISO 4217 currency code (required)
  * @param date transaction date (required, not in future)
- * @param transactionType EXPENSE or INCOME (optional, defaults to EXPENSE)
- * @param transactionStability FIXED or VARIABLE (optional, defaults to VARIABLE)
+ * @param type EXPENSE or INCOME (optional, defaults to EXPENSE)
+ * @param stability FIXED or VARIABLE (optional, defaults to VARIABLE)
  * @param categoryId category UUID (optional, defaults to "Others")
  */
 public record TransactionCreationDto(
@@ -41,9 +41,9 @@ public record TransactionCreationDto(
     @PastOrPresent(message = "Date must not be in the future")
     ZonedDateTime date,
 
-    TransactionType transactionType,
+    TransactionType type,
 
-    TransactionStability transactionStability,
+    TransactionStability stability,
 
     UUID categoryId
 ) {

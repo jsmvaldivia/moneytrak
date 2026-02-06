@@ -17,8 +17,8 @@ import java.util.UUID;
  * @param amount new amount (optional)
  * @param currency new currency (optional)
  * @param date new date (optional)
- * @param transactionType new type EXPENSE/INCOME (optional)
- * @param transactionStability new stability FIXED/VARIABLE (optional)
+ * @param type new type EXPENSE/INCOME (optional)
+ * @param stability new stability FIXED/VARIABLE (optional)
  * @param categoryId new category ID (optional)
  * @param version current version for optimistic locking (required)
  */
@@ -36,9 +36,9 @@ public record TransactionUpdateDto(
     @PastOrPresent(message = "Date must not be in the future")
     ZonedDateTime date,
 
-    TransactionType transactionType,
+    TransactionType type,
 
-    TransactionStability transactionStability,
+    TransactionStability stability,
 
     UUID categoryId,
 

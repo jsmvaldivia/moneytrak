@@ -173,7 +173,7 @@ curl -X POST http://localhost:8080/v1/transactions \
     "currency": "EUR",
     "date": "2026-01-19T10:00:00Z",
     "transactionType": "EXPENSE",
-    "transactionStability": "VARIABLE",
+    "stability": "VARIABLE",
     "categoryId": "550e8400-e29b-41d4-a716-446655440000"
   }' | jq
 ```
@@ -209,7 +209,7 @@ curl -X POST http://localhost:8080/v1/transactions \
     "currency": "EUR",
     "date": "2026-01-01T00:00:00Z",
     "transactionType": "EXPENSE",
-    "transactionStability": "FIXED",
+    "stability": "FIXED",
     "categoryId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
   }' | jq
 ```
@@ -227,7 +227,7 @@ curl -X POST http://localhost:8080/v1/transactions \
     "currency": "EUR",
     "date": "2026-01-01T00:00:00Z",
     "transactionType": "INCOME",
-    "transactionStability": "FIXED"
+    "stability": "FIXED"
   }' | jq
 ```
 
@@ -246,7 +246,7 @@ curl -X POST http://localhost:8080/v1/transactions \
     "currency": "EUR",
     "date": "2026-01-15T00:00:00Z",
     "transactionType": "INCOME",
-    "transactionStability": "VARIABLE",
+    "stability": "VARIABLE",
     "categoryId": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
   }' | jq
 ```
@@ -325,7 +325,7 @@ curl -X PUT "http://localhost:8080/v1/transactions/${TRANSACTION_ID}" \
     "currency": "EUR",
     "date": "2026-01-19T10:00:00Z",
     "transactionType": "EXPENSE",
-    "transactionStability": "VARIABLE",
+    "stability": "VARIABLE",
     "categoryId": "550e8400-e29b-41d4-a716-446655440000",
     "version": 0
   }' | jq
@@ -377,7 +377,7 @@ curl -X POST http://localhost:8080/v1/transactions \
     "currency": "EUR",
     "date": "2026-01-19T10:00:00Z",
     "transactionType": "EXPENSE",
-    "transactionStability": "VARIABLE"
+    "stability": "VARIABLE"
   }' | jq
 ```
 
@@ -409,7 +409,7 @@ curl -X POST http://localhost:8080/v1/transactions \
     "currency": "EUR",
     "date": "2027-01-01T00:00:00Z",
     "transactionType": "EXPENSE",
-    "transactionStability": "VARIABLE"
+    "stability": "VARIABLE"
   }' | jq
 ```
 
@@ -441,7 +441,7 @@ curl -X POST http://localhost:8080/v1/transactions \
     "currency": "INVALID",
     "date": "2026-01-19T10:00:00Z",
     "transactionType": "EXPENSE",
-    "transactionStability": "VARIABLE"
+    "stability": "VARIABLE"
   }' | jq
 ```
 
@@ -512,7 +512,7 @@ curl -X PUT "http://localhost:8080/v1/transactions/${TRANSACTION_ID}" \
     "currency": "EUR",
     "date": "2026-01-19T10:00:00Z",
     "transactionType": "EXPENSE",
-    "transactionStability": "VARIABLE",
+    "stability": "VARIABLE",
     "categoryId": "550e8400-e29b-41d4-a716-446655440000",
     "version": 0
   }' | jq
@@ -575,7 +575,7 @@ curl -X POST http://localhost:8080/v1/transactions \
     "currency": "EUR",
     "date": "2026-01-01T00:00:00Z",
     "transactionType": "INCOME",
-    "transactionStability": "FIXED"
+    "stability": "FIXED"
   }'
 
 # 5. View all transactions
