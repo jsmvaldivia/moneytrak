@@ -82,6 +82,7 @@ class FinalIntegrationTest {
                         "amount": 75.50,
                         "currency": "EUR",
                         "date": "2026-01-22T10:00:00Z",
+                        "type":"EXPENSE",
                         "categoryId": "%s"
                     }
                     """,

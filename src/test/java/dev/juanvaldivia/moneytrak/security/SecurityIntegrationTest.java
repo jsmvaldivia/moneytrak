@@ -40,7 +40,7 @@ class SecurityIntegrationTest {
                 "amount": 10.00,
                 "currency": "EUR",
                 "date": "2026-01-15T12:00:00Z",
-                "transactionType": "EXPENSE"
+                "type": "EXPENSE"
             }
             """;
 
