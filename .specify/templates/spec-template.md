@@ -100,6 +100,44 @@
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
+### Security Requirements *(include if feature has auth/authz)*
+
+<!--
+  ACTION REQUIRED: Define authentication and authorization requirements.
+  MoneyTrak uses HTTP Basic Authentication with three roles:
+  - APP: Read-only access (GET only)
+  - BACKOFFICE: Full CRUD access (GET, POST, PUT, DELETE)
+  - ADMIN: Full access including actuator endpoints
+-->
+
+**Authentication Method**: [HTTP Basic (default) / None (if public endpoints)]
+
+**Role-Based Access Control**:
+
+| Endpoint Pattern | HTTP Methods | Required Roles | Rationale |
+|------------------|-------------|----------------|-----------|
+| `GET /v1/<feature>/*` | GET | APP, BACKOFFICE, ADMIN | Read access for all authenticated users |
+| `POST /v1/<feature>/*` | POST | BACKOFFICE, ADMIN | Write operations require elevated privileges |
+| `PUT /v1/<feature>/*` | PUT | BACKOFFICE, ADMIN | Update operations require elevated privileges |
+| `DELETE /v1/<feature>/*` | DELETE | BACKOFFICE, ADMIN | Delete operations require elevated privileges |
+
+**Public Endpoints** (if any):
+- [List endpoints accessible without authentication, e.g., `/actuator/health`]
+- Default: None (all `/v1/**` endpoints require authentication)
+
+**Error Responses**:
+- **401 Unauthorized**: Missing or invalid credentials → `ErrorResponseDto` format
+- **403 Forbidden**: Valid credentials but insufficient role permissions → `ErrorResponseDto` format
+
+**Security Test Coverage Required**:
+- **AUTH-001**: Unauthenticated requests to protected endpoints return 401
+- **AUTH-002**: Invalid credentials return 401 with failed auth logging
+- **AUTH-003**: APP role can access GET endpoints
+- **AUTH-004**: APP role receives 403 for POST/PUT/DELETE endpoints
+- **AUTH-005**: BACKOFFICE role can access all CRUD endpoints
+- **AUTH-006**: BACKOFFICE role receives 403 for admin-only endpoints
+- **AUTH-007**: ADMIN role can access all endpoints
+
 ## Success Criteria *(mandatory)*
 
 <!--

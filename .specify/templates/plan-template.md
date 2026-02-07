@@ -27,6 +27,32 @@
 **Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
 **Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
+## Database Schema Changes
+
+**Migration Required**: [Yes/No]
+
+**New Tables** (if applicable):
+- `table_name`: [Purpose, key columns, relationships]
+  - Example: `transactions` - Stores financial transactions with amount, date, category_id FK
+
+**Modified Tables** (if applicable):
+- `table_name`: [Columns added/modified/removed, rationale]
+  - Example: Add `transaction_type` ENUM column to distinguish INCOME vs EXPENSE
+
+**Data Migration** (if applicable):
+- [Describe any data transformation needed]
+- Example: Migrate existing `expenses` table data to `transactions` with default type=EXPENSE
+
+**Flyway Migration**:
+- Version: `V[next_number]__[snake_case_description].sql`
+- Example: `V2__add_transaction_categories.sql`
+- Location: `src/main/resources/db/migration/`
+
+**Schema Validation**:
+- [ ] Migration tested with existing data (no data loss)
+- [ ] Rollback strategy documented (if applicable)
+- [ ] Indexes added for foreign keys and frequently queried columns
+
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -47,52 +73,69 @@ specs/[###-feature]/
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
-### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
+### Source Code Structure
+
+**MoneyTrak follows a feature-based architecture** where each business capability is a self-contained package.
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+src/main/java/dev/juanvaldivia/moneytrak/
+├── <feature>/                          # Feature package (e.g., transactions, categories)
+│   ├── dto/                            # DTOs for this feature
+│   │   ├── <Feature>CreationDto.java  # Creation DTO with validation (record)
+│   │   ├── <Feature>UpdateDto.java    # Update DTO with version field (record)
+│   │   └── <Feature>Dto.java          # Response DTO (record)
+│   ├── mapper/                         # Mappers for this feature
+│   │   └── <Feature>Mapper.java       # DTO ↔ Entity mapper (static methods)
+│   ├── exception/                      # Feature-specific exceptions (optional)
+│   │   └── <Feature>Exception.java    # e.g., CategoryInUseException
+│   ├── <Feature>.java                  # JPA entity with @Entity, @Version
+│   ├── <Feature>Controller.java        # REST controller with @RestController
+│   ├── <Feature>Service.java           # Service interface
+│   ├── Local<Feature>Service.java      # Service implementation with @Service
+│   ├── <Feature>Repository.java        # JPA repository (if custom queries needed)
+│   ├── <Feature>Type.java              # Enum if needed (@Enumerated(STRING))
+│   └── <Feature>Seeder.java            # Data seeder (if predefined data needed)
+├── security/                            # Authentication & authorization (shared)
+│   ├── SecurityConfig.java             # SecurityFilterChain bean
+│   ├── SecurityProperties.java         # @ConfigurationProperties
+│   ├── SecurityUserDetailsService.java # UserDetailsService implementation
+│   ├── CustomAuthEntryPoint.java       # 401 error handler
+│   └── CustomAccessDeniedHandler.java  # 403 error handler
+├── exception/                           # Global error handling (shared)
+│   ├── GlobalExceptionHandler.java     # @RestControllerAdvice
+│   ├── NotFoundException.java          # Generic 404 exception
+│   ├── ConflictException.java          # Generic 409 exception
+│   ├── ErrorResponseDto.java           # Standard error format (record)
+│   └── FieldErrorDto.java              # Validation error detail (record)
+├── validation/                          # Custom validators (shared)
+│   ├── Currency.java                   # Custom validation annotation
+│   └── CurrencyValidator.java          # Validator implementation
+└── MoneytrakApplication.java           # Spring Boot main class
 
-tests/
-├── contract/
-├── integration/
-└── unit/
+src/main/resources/
+├── application.yaml                     # Spring configuration
+├── application-test.yaml                # Test profile configuration
+└── db/migration/                        # Flyway migrations
+    ├── V1__initial_schema.sql          # Example: Initial schema
+    └── V2__add_categories.sql          # Example: Add categories feature
 
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+src/test/java/dev/juanvaldivia/moneytrak/
+└── <feature>/
+    └── <Feature>ControllerIntegrationTest.java  # @SpringBootTest + @AutoConfigureMockMvc
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Principles**:
+- Each feature is a complete vertical slice with DTOs and mappers in subdirectories
+- Cross-feature dependencies go through public service interfaces only
+- Shared infrastructure (security, exception, validation) in dedicated packages
+- Feature-specific exceptions can live in `<feature>/exception/` subdirectory
+- Tests mirror source structure for easy navigation
+
+**For This Feature**:
+- Primary package: `dev.juanvaldivia.moneytrak.<feature-name>/`
+- Related entities: [List any entities this feature will create]
+- Shared infrastructure: [Note if using security/, exception/, validation/ packages]
+- Data seeding: [Note if this feature needs predefined data via Seeder class]
 
 ## Complexity Tracking
 

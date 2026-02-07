@@ -35,11 +35,12 @@ and aligns code structure with business domain. Changes to a feature remain loca
 API contracts MUST be separated from internal domain models via explicit DTOs.
 
 **Rules:**
-- Every REST endpoint uses dedicated DTOs (e.g., `ExpenseCreationDto`, `ExpenseDto`)
-- Domain models (records like `Expense`) remain internal to the feature
-- Mapper classes handle DTO ↔ Domain conversion (e.g., `ExpenseMapper`)
+- Every REST endpoint uses dedicated DTOs (e.g., `TransactionCreationDto`, `TransactionDto`)
+- Domain models (entities like `Transaction`) remain internal to the feature
+- Entities use classes with @Entity annotation; DTOs use records for immutability
+- Mapper classes handle DTO ↔ Entity conversion (e.g., `TransactionMapper`)
 - DTOs enforce validation rules via Jakarta Bean Validation annotations
-- Domain models enforce business invariants via constructors/factory methods
+- Entities enforce business invariants via constructors and JPA lifecycle methods
 
 **Rationale:** Separation prevents API contracts from leaking into business logic,
 enables independent evolution of API and domain, and provides clear validation boundaries.
@@ -90,6 +91,26 @@ Leverage Java's type system and declarative validation for correctness.
 
 **Rationale:** Strong typing prevents entire categories of bugs at compile time.
 Declarative validation centralizes rules and provides consistent error responses.
+
+### VI. Security & Authorization
+
+Authentication and authorization MUST be explicit, role-based, and defense-in-depth.
+
+**Rules:**
+- HTTP Basic Authentication for API access (Spring Security)
+- Three role hierarchy: APP (read-only), BACKOFFICE (CRUD), ADMIN (full access)
+- URL-based authorization rules in centralized `SecurityFilterChain`
+- Custom JSON error responses for 401/403 using `ErrorResponseDto` format
+- Failed authentication attempts MUST be logged (username, IP, timestamp) at WARN level
+- Public endpoints MUST be explicitly declared (e.g., `/actuator/health`)
+- Sensitive data (passwords) MUST use BCrypt hashing in production
+- Test profile MUST use separate credentials from production (`{noop}` prefix acceptable)
+- Security integration tests required for: authentication, each role's permissions, access denials
+
+**Rationale:** Security must be designed upfront, not retrofitted. Role-based access
+control with clear permission boundaries prevents unauthorized access and provides
+audit trails for compliance. Comprehensive security testing ensures the authorization
+model works correctly and catches privilege escalation vulnerabilities.
 
 ## Technology Standards
 
