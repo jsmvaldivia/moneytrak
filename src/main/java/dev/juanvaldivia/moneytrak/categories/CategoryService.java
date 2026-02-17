@@ -4,7 +4,9 @@ import dev.juanvaldivia.moneytrak.categories.dto.CategoryCreationDto;
 import dev.juanvaldivia.moneytrak.categories.dto.CategoryDto;
 import dev.juanvaldivia.moneytrak.categories.dto.CategoryUpdateDto;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.UUID;
 
 /**
@@ -25,9 +27,10 @@ public interface CategoryService {
     /**
      * Find all categories (predefined and custom).
      *
-     * @return list of all categories
+     * @param pageable pagination and sort parameters
+     * @return page of all categories
      */
-    List<CategoryDto> findAll();
+    Page<CategoryDto> findAll(Pageable pageable);
 
     /**
      * Find category by ID.

@@ -1,39 +1,42 @@
 package dev.juanvaldivia.moneytrak.transactions;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 /**
  * Spring Data JPA repository for Transaction entity.
- * Provides transaction queries with category filtering support.
+ * Provides composable filtering with pagination support.
  */
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
 
     /**
-     * Find all transactions ordered by date descending (most recent first).
-     * Used for listing transactions in reverse chronological order.
+     * Find transactions with optional category and stability filters, ordered by date descending.
+     * Both filters are independently optional and can be combined.
+     * Uses JOIN FETCH to avoid N+1 queries when accessing category data.
      *
-     * @return list of all transactions
+     * @param categoryId optional category UUID filter (null = all categories)
+     * @param stability optional stability filter (null = all stability values)
+     * @param pageable pagination and sort parameters
+     * @return page of matching transactions with categories eagerly loaded
      */
-    @Query("SELECT t FROM Transaction t ORDER BY t.date DESC")
-    List<Transaction> findAllOrderByDateDesc();
-
-    /**
-     * Find transactions by category ID, ordered by date descending.
-     * Used for category-based filtering.
-     *
-     * @param categoryId category UUID
-     * @return list of transactions in the specified category
-     */
-    @Query("SELECT t FROM Transaction t WHERE t.category.id = :categoryId ORDER BY t.date DESC")
-    List<Transaction> findByCategoryIdOrderByDateDesc(@Param("categoryId") UUID categoryId);
+    @Query(value = "SELECT t FROM Transaction t JOIN FETCH t.category " +
+            "WHERE (:categoryId IS NULL OR t.category.id = :categoryId) " +
+            "AND (:stability IS NULL OR t.stability = :stability)",
+            countQuery = "SELECT COUNT(t) FROM Transaction t " +
+            "WHERE (:categoryId IS NULL OR t.category.id = :categoryId) " +
+            "AND (:stability IS NULL OR t.stability = :stability)")
+    Page<Transaction> findByFilters(
+            @Param("categoryId") UUID categoryId,
+            @Param("stability") TransactionStability stability,
+            Pageable pageable);
 
     /**
      * Count transactions linked to a specific category.
@@ -51,16 +54,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
      * @param type transaction type (EXPENSE or INCOME)
      * @return sum of amounts, or 0 if no transactions
      */
-    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.transactionType = :type")
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.type = :type")
     BigDecimal sumAmountByType(@Param("type") TransactionType type);
-
-    /**
-     * Find transactions by stability, ordered by date descending.
-     * Used for filtering FIXED vs VARIABLE transactions.
-     *
-     * @param stability transaction stability (FIXED or VARIABLE)
-     * @return list of transactions with specified stability
-     */
-    @Query("SELECT t FROM Transaction t WHERE t.transactionStability = :stability ORDER BY t.date DESC")
-    List<Transaction> findByTransactionStabilityOrderByDateDesc(@Param("stability") TransactionStability stability);
 }

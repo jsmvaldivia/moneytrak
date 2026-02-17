@@ -3,8 +3,10 @@ package dev.juanvaldivia.moneytrak.transactions;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionCreationDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionUpdateDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -26,19 +28,17 @@ public interface TransactionService {
     TransactionDto createTransaction(TransactionCreationDto dto);
 
     /**
-     * List all transactions ordered by date descending.
+     * List transactions with optional composable filters.
+     * Both categoryId and stability are independently optional and can be combined.
+     * If categoryId is provided, validates the category exists first.
      *
-     * @return list of all transactions
+     * @param categoryId optional category UUID filter
+     * @param stability optional stability filter
+     * @param pageable pagination and sort parameters
+     * @return page of matching transactions
+     * @throws dev.juanvaldivia.moneytrak.exception.NotFoundException if categoryId provided but not found
      */
-    List<TransactionDto> listTransactions();
-
-    /**
-     * List transactions filtered by category ID.
-     *
-     * @param categoryId category UUID
-     * @return list of transactions in the category (empty if none)
-     */
-    List<TransactionDto> listTransactionsByCategory(UUID categoryId);
+    Page<TransactionDto> listTransactions(UUID categoryId, TransactionStability stability, Pageable pageable);
 
     /**
      * Get transaction by ID.
@@ -74,20 +74,12 @@ public interface TransactionService {
      *
      * @return sum of all expense amounts
      */
-    java.math.BigDecimal calculateExpenseTotal();
+    BigDecimal calculateExpenseTotal();
 
     /**
      * Calculate total amount for all INCOME transactions.
      *
      * @return sum of all income amounts
      */
-    java.math.BigDecimal calculateIncomeTotal();
-
-    /**
-     * List transactions filtered by stability.
-     *
-     * @param stability transaction stability (FIXED or VARIABLE)
-     * @return list of transactions with specified stability
-     */
-    List<TransactionDto> listTransactionsByStability(TransactionStability stability);
+    BigDecimal calculateIncomeTotal();
 }

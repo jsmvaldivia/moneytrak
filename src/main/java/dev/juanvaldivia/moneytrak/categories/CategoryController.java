@@ -4,12 +4,15 @@ import dev.juanvaldivia.moneytrak.categories.dto.CategoryCreationDto;
 import dev.juanvaldivia.moneytrak.categories.dto.CategoryDto;
 import dev.juanvaldivia.moneytrak.categories.dto.CategoryUpdateDto;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -53,9 +56,10 @@ public class CategoryController {
      * @return 200 OK with list of all categories
      */
     @GetMapping
-    public ResponseEntity<List<CategoryDto>> getAllCategories() {
-        List<CategoryDto> categories = categoryService.findAll();
-        return ResponseEntity.ok(categories);
+    public ResponseEntity<Page<CategoryDto>> getAllCategories(
+        @PageableDefault(size = 50, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(categoryService.findAll(pageable));
     }
 
     /**

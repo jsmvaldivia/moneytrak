@@ -51,8 +51,8 @@ public class TransactionMapper {
             dto.amount() != null ? dto.amount() : existing.amount(),
             dto.currency() != null ? dto.currency() : existing.currency(),
             dto.date() != null ? dto.date() : existing.date(),
-            dto.type() != null ? dto.type() : existing.transactionType(),
-            dto.stability() != null ? dto.stability() : existing.transactionStability(),
+            dto.type() != null ? dto.type() : existing.type(),
+            dto.stability() != null ? dto.stability() : existing.stability(),
             newCategory != null ? newCategory : existing.category()
         );
     }
@@ -72,8 +72,8 @@ public class TransactionMapper {
             entity.amount(),
             entity.currency(),
             entity.date(),
-            entity.transactionType(),
-            entity.transactionStability(),
+            entity.type(),
+            entity.stability(),
             category != null ? category.getId() : null,
             category != null ? category.getName() : null,
             entity.version(),

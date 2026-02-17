@@ -36,11 +36,11 @@ public class Transaction {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_type", length = 32, nullable = false)
-    private TransactionType transactionType = TransactionType.EXPENSE;
+    private TransactionType type = TransactionType.EXPENSE;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_stability", length = 32, nullable = false)
-    private TransactionStability transactionStability = TransactionStability.VARIABLE;
+    private TransactionStability stability = TransactionStability.VARIABLE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false, foreignKey = @ForeignKey(name = "fk_transaction_category"))
@@ -65,8 +65,8 @@ public class Transaction {
         BigDecimal amount,
         String currency,
         ZonedDateTime date,
-        TransactionType transactionType,
-        TransactionStability transactionStability,
+        TransactionType type,
+        TransactionStability stability,
         Category category,
         Integer version,
         ZonedDateTime createdAt,
@@ -77,8 +77,8 @@ public class Transaction {
         this.amount = amount;
         this.currency = currency;
         this.date = date;
-        this.transactionType = transactionType != null ? transactionType : TransactionType.EXPENSE;
-        this.transactionStability = transactionStability != null ? transactionStability : TransactionStability.VARIABLE;
+        this.type = type != null ? type : TransactionType.EXPENSE;
+        this.stability = stability != null ? stability : TransactionStability.VARIABLE;
         this.category = category;
         this.version = version;
         this.createdAt = createdAt;
@@ -92,8 +92,8 @@ public class Transaction {
      * @param amount positive amount
      * @param currency ISO 4217 currency code
      * @param date transaction date
-     * @param transactionType EXPENSE or INCOME (defaults to EXPENSE if null)
-     * @param transactionStability FIXED or VARIABLE (defaults to VARIABLE if null)
+     * @param type EXPENSE or INCOME (defaults to EXPENSE if null)
+     * @param stability FIXED or VARIABLE (defaults to VARIABLE if null)
      * @param category linked category (required)
      * @return new transaction instance
      */
@@ -102,8 +102,8 @@ public class Transaction {
         BigDecimal amount,
         String currency,
         ZonedDateTime date,
-        TransactionType transactionType,
-        TransactionStability transactionStability,
+        TransactionType type,
+        TransactionStability stability,
         Category category
     ) {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
@@ -113,8 +113,8 @@ public class Transaction {
             amount,
             currency,
             date.withZoneSameInstant(ZoneOffset.UTC),
-            transactionType,
-            transactionStability,
+            type,
+            stability,
             category,
             0,
             now,
@@ -150,8 +150,8 @@ public class Transaction {
      * @param amount new amount
      * @param currency new currency
      * @param date new date
-     * @param transactionType new type (EXPENSE/INCOME)
-     * @param transactionStability new stability (FIXED/VARIABLE)
+     * @param type new type (EXPENSE/INCOME)
+     * @param stability new stability (FIXED/VARIABLE)
      * @param category new category
      */
     public void update(
@@ -159,16 +159,16 @@ public class Transaction {
         BigDecimal amount,
         String currency,
         ZonedDateTime date,
-        TransactionType transactionType,
-        TransactionStability transactionStability,
+        TransactionType type,
+        TransactionStability stability,
         Category category
     ) {
         this.description = description;
         this.amount = amount;
         this.currency = currency;
         this.date = date.withZoneSameInstant(ZoneOffset.UTC);
-        this.transactionType = transactionType != null ? transactionType : this.transactionType;
-        this.transactionStability = transactionStability != null ? transactionStability : this.transactionStability;
+        this.type = type != null ? type : this.type;
+        this.stability = stability != null ? stability : this.stability;
         this.category = category;
         this.updatedAt = ZonedDateTime.now(ZoneOffset.UTC);
     }
@@ -194,12 +194,12 @@ public class Transaction {
         return date;
     }
 
-    public TransactionType transactionType() {
-        return transactionType;
+    public TransactionType type() {
+        return type;
     }
 
-    public TransactionStability transactionStability() {
-        return transactionStability;
+    public TransactionStability stability() {
+        return stability;
     }
 
     public Category category() {

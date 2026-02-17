@@ -8,10 +8,12 @@ import dev.juanvaldivia.moneytrak.categories.mapper.CategoryMapper;
 import dev.juanvaldivia.moneytrak.exception.ConflictException;
 import dev.juanvaldivia.moneytrak.exception.NotFoundException;
 import dev.juanvaldivia.moneytrak.transactions.TransactionRepository;
+import java.util.Objects;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -52,11 +54,9 @@ public class LocalCategoryService implements CategoryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CategoryDto> findAll() {
-        return categoryRepository.findAll()
-            .stream()
-            .map(categoryMapper::toDto)
-            .toList();
+    public Page<CategoryDto> findAll(Pageable pageable) {
+        return categoryRepository.findAll(pageable)
+            .map(categoryMapper::toDto);
     }
 
     @Override
@@ -74,9 +74,14 @@ public class LocalCategoryService implements CategoryService {
         Category category = categoryRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Category not found with id: " + id));
 
+        // Protect the default "Others" category from being renamed
+        if ("Others".equalsIgnoreCase(category.getName())) {
+            throw new ConflictException("Cannot rename the default category 'Others'");
+        }
+
         // Check if name already exists (excluding current category)
         categoryRepository.findByNameIgnoreCase(dto.name())
-            .filter(existing -> !existing.getId().equals(id))
+            .filter(existing -> !Objects.equals(existing.getId(), id))
             .ifPresent(existing -> {
                 throw new ConflictException("Category with name '" + dto.name() + "' already exists");
             });

@@ -4,19 +4,23 @@ import dev.juanvaldivia.moneytrak.transactions.dto.TransactionCreationDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionUpdateDto;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 /**
  * REST controller for transaction management.
  * Renamed from ExpenseController to support broader transaction scope (income + expenses).
  *
- * <p>Provides CRUD endpoints for transactions with category linking and filtering.
+ * <p>Provides CRUD endpoints for transactions with category linking and composable filtering.
  * All endpoints are versioned under /v1/transactions.
  */
 @RestController
@@ -52,35 +56,24 @@ public class TransactionController {
     }
 
     /**
-     * List all transactions or filter by category/stability.
-     * GET /v1/transactions?categoryId={uuid}&stability={FIXED|VARIABLE}
+     * List transactions with optional composable filters and pagination.
+     * GET /v1/transactions?categoryId={uuid}&stability={FIXED|VARIABLE}&page=0&size=20&sort=date,desc
      *
-     * Returns transactions ordered by date descending (newest first).
-     * Supports filtering by categoryId and/or stability.
-     * Returns empty array if valid filters have no matching transactions.
+     * Both filters are optional and can be combined.
+     * Returns transactions ordered by date descending by default.
      *
      * @param categoryId optional category UUID for filtering
      * @param stability optional transaction stability for filtering
-     * @return 200 OK with list of transactions
+     * @param pageable pagination and sort parameters (default: page=0, size=20, sort=date,desc)
+     * @return 200 OK with page of transactions
      */
     @GetMapping
-    public ResponseEntity<List<TransactionDto>> listTransactions(
+    public ResponseEntity<Page<TransactionDto>> listTransactions(
         @RequestParam(required = false) UUID categoryId,
-        @RequestParam(required = false) TransactionStability stability
+        @RequestParam(required = false) TransactionStability stability,
+        @PageableDefault(size = 20, sort = "date", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        if (categoryId != null) {
-            // Filter by category
-            List<TransactionDto> transactions = service.listTransactionsByCategory(categoryId);
-            return ResponseEntity.ok(transactions);
-        } else if (stability != null) {
-            // Filter by stability
-            List<TransactionDto> transactions = service.listTransactionsByStability(stability);
-            return ResponseEntity.ok(transactions);
-        } else {
-            // Return all transactions
-            List<TransactionDto> transactions = service.listTransactions();
-            return ResponseEntity.ok(transactions);
-        }
+        return ResponseEntity.ok(service.listTransactions(categoryId, stability, pageable));
     }
 
     /**
@@ -93,8 +86,7 @@ public class TransactionController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<TransactionDto> getTransaction(@PathVariable UUID id) {
-        TransactionDto transaction = service.getTransactionById(id);
-        return ResponseEntity.ok(transaction);
+        return ResponseEntity.ok(service.getTransactionById(id));
     }
 
     /**
@@ -115,8 +107,7 @@ public class TransactionController {
         @PathVariable UUID id,
         @Valid @RequestBody TransactionUpdateDto dto
     ) {
-        TransactionDto updated = service.updateTransaction(id, dto);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(service.updateTransaction(id, dto));
     }
 
     /**
@@ -140,9 +131,8 @@ public class TransactionController {
      * @return 200 OK with total expense amount
      */
     @GetMapping("/summary/expenses")
-    public ResponseEntity<java.math.BigDecimal> getExpenseTotal() {
-        java.math.BigDecimal total = service.calculateExpenseTotal();
-        return ResponseEntity.ok(total);
+    public ResponseEntity<BigDecimal> getExpenseTotal() {
+        return ResponseEntity.ok(service.calculateExpenseTotal());
     }
 
     /**
@@ -152,8 +142,7 @@ public class TransactionController {
      * @return 200 OK with total income amount
      */
     @GetMapping("/summary/income")
-    public ResponseEntity<java.math.BigDecimal> getIncomeTotal() {
-        java.math.BigDecimal total = service.calculateIncomeTotal();
-        return ResponseEntity.ok(total);
+    public ResponseEntity<BigDecimal> getIncomeTotal() {
+        return ResponseEntity.ok(service.calculateIncomeTotal());
     }
 }

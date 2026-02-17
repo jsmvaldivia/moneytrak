@@ -46,7 +46,7 @@ class FinalIntegrationTest {
     mockMvc
         .perform(get("/v1/categories"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(15)); // 14 + "Others"
+        .andExpect(jsonPath("$.totalElements").value(15)); // 14 + "Others"
 
     // Create custom category
     String createCategoryResponse =
@@ -102,8 +102,8 @@ class FinalIntegrationTest {
     mockMvc
         .perform(get("/v1/transactions?categoryId=" + categoryId))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].categoryName").value("Medical"));
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.content[0].categoryName").value("Medical"));
 
     // ============================================================================
     // US3: Transaction Types (EXPENSE vs INCOME)
@@ -167,14 +167,14 @@ class FinalIntegrationTest {
     mockMvc
         .perform(get("/v1/transactions?stability=FIXED"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].description").value("Netflix subscription"));
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.content[0].description").value("Netflix subscription"));
 
     // Filter by VARIABLE stability
     mockMvc
         .perform(get("/v1/transactions?stability=VARIABLE"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(2)); // Doctor visit + Freelance payment
+        .andExpect(jsonPath("$.content.length()").value(2)); // Doctor visit + Freelance payment
 
     // ============================================================================
     // Final Verification
@@ -189,7 +189,7 @@ class FinalIntegrationTest {
     mockMvc
         .perform(get("/v1/transactions"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(3));
+        .andExpect(jsonPath("$.totalElements").value(3));
   }
 
   /** Helper method to extract "id" field from JSON response. */

@@ -1,6 +1,5 @@
 package dev.juanvaldivia.moneytrak.exception;
 
-import dev.juanvaldivia.moneytrak.categories.exception.CategoryInUseException;
 import jakarta.persistence.OptimisticLockException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +33,7 @@ public class GlobalExceptionHandler {
         ErrorResponseDto errorResponse = new ErrorResponseDto(
             HttpStatus.BAD_REQUEST.value(),
             "ValidationError",
-            "Invalid expense data",
+            "Validation failed",
             details
         );
 
@@ -53,7 +52,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler({OptimisticLockException.class, ConflictException.class, CategoryInUseException.class})
+    @ExceptionHandler({OptimisticLockException.class, ConflictException.class})
     public ResponseEntity<ErrorResponseDto> handleConflictException(Exception ex) {
         String message = ex.getMessage();
         if (message == null || message.isEmpty()) {

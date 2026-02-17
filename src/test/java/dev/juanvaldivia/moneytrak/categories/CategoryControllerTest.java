@@ -39,9 +39,9 @@ class CategoryControllerTest {
         // When/Then: GET /v1/categories returns 200 OK with at least 14 categories
         mockMvc.perform(get("/v1/categories"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value((int) count))
-            .andExpect(jsonPath("$[?(@.name == 'Office Renting')].isPredefined").value(true))
-            .andExpect(jsonPath("$[?(@.name == 'Others')].isPredefined").value(true));
+            .andExpect(jsonPath("$.content.length()").value((int) count))
+            .andExpect(jsonPath("$.content[?(@.name == 'Office Renting')].isPredefined").value(true))
+            .andExpect(jsonPath("$.content[?(@.name == 'Others')].isPredefined").value(true));
     }
 
     // T010: Test for creating custom category
@@ -132,6 +132,18 @@ class CategoryControllerTest {
         int idStart = jsonResponse.indexOf("\"id\":\"") + 6;
         int idEnd = jsonResponse.indexOf("\"", idStart);
         return jsonResponse.substring(idStart, idEnd);
+    }
+
+    // T012b: Test for preventing rename of the "Others" default category (409 Conflict)
+    @Test
+    void updateCategory_renameOthers_shouldReturn409Conflict() throws Exception {
+        Category others = categoryRepository.findByNameIgnoreCase("Others").orElseThrow();
+
+        mockMvc.perform(put("/v1/categories/{id}", others.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Miscellaneous\",\"version\":" + others.getVersion() + "}"))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.status").value(409));
     }
 
     // T015: Test for duplicate category name validation (409 Conflict)

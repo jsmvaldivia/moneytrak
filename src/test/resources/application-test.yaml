@@ -1,9 +1,15 @@
 spring:
   datasource:
     url: jdbc:h2:mem:testdb  # In-memory for fast tests
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
   jpa:
     hibernate:
       ddl-auto: create-drop  # Clean database per test
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
 
 moneytrak:
   security:

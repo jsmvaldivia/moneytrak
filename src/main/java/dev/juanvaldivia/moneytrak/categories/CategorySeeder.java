@@ -24,13 +24,13 @@ public class CategorySeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        // Only seed if no categories exist
-        if (categoryRepository.count() > 0) {
+        // Only seed if the default "Others" category does not exist yet
+        if (categoryRepository.existsByNameIgnoreCase("Others")) {
             log.info("Categories already seeded, skipping...");
             return;
         }
 
-        log.info("Seeding 14 predefined categories...");
+        log.info("Seeding 15 predefined categories...");
 
         List<Category> predefinedCategories = List.of(
             Category.createPredefined("Office Renting"),

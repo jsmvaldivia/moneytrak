@@ -3,23 +3,19 @@ spring:
     name: moneytrak
 
   datasource:
-    url: jdbc:h2:file:./data/moneytrak
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true  # Access at http://localhost:8080/h2-console
-      path: /h2-console
+    url: ${DB_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: update  # Auto-create/update schema
+      ddl-auto: validate  # Validate schema matches entities; Flyway owns migrations
     show-sql: false    # Set true for SQL debugging
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 management:
   endpoints:
@@ -34,15 +30,11 @@ moneytrak:
   security:
     users:
       - username: app-client
-        password: "{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW"
+        password: "${APP_CLIENT_PASSWORD}"
         role: APP
       - username: backoffice
-        password: "{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW"
+        password: "${BACKOFFICE_PASSWORD}"
         role: BACKOFFICE
       - username: admin
-        password: "{bcrypt}$2a$10$GRLdNijSQMUvl/au9ofL.eDwmoohzzS7.rmNSJZ.0FxO/BTk76klW"
+        password: "${ADMIN_PASSWORD}"
         role: ADMIN
-
-logging:
-  level:
-    org.springframework.boot.autoconfigure.h2: DEBUG

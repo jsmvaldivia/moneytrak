@@ -125,8 +125,8 @@ class TransactionControllerTest {
 
         mockMvc.perform(get("/v1/transactions"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].categoryId").exists())
-            .andExpect(jsonPath("$[0].categoryName").exists());
+            .andExpect(jsonPath("$.content[0].categoryId").exists())
+            .andExpect(jsonPath("$.content[0].categoryName").exists());
     }
 
     // T032: Filtering transactions by category (200 OK with results)
@@ -150,8 +150,8 @@ class TransactionControllerTest {
 
         mockMvc.perform(get("/v1/transactions?categoryId=" + supermarket.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].categoryName").value("Supermarket"));
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].categoryName").value("Supermarket"));
     }
 
     // T033: Filtering by category with no transactions (200 OK empty array)
@@ -161,7 +161,7 @@ class TransactionControllerTest {
 
         mockMvc.perform(get("/v1/transactions?categoryId=" + sport.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(0));
+            .andExpect(jsonPath("$.content.length()").value(0));
     }
 
     // T034: Invalid category ID reference (404 Not Found)
@@ -484,9 +484,54 @@ class TransactionControllerTest {
         // Filter by FIXED
         mockMvc.perform(get("/v1/transactions?stability=FIXED"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].stability").value("FIXED"))
-            .andExpect(jsonPath("$[0].description").value("Rent payment"));
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].stability").value("FIXED"))
+            .andExpect(jsonPath("$.content[0].description").value("Rent payment"));
+    }
+
+    // T066b: Filtering by BOTH category and stability (composable filters)
+    @Test
+    void filterByCategoryAndStability_shouldReturnMatchingTransactions() throws Exception {
+        Category subscriptions = categoryRepository.findByNameIgnoreCase("Subscriptions").orElseThrow();
+
+        // Create FIXED subscription
+        mockMvc.perform(post("/v1/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "description": "Netflix",
+                        "amount": 12.99,
+                        "currency": "EUR",
+                        "date": "2026-01-01T00:00:00Z",
+                        "type": "EXPENSE",
+                        "stability": "FIXED",
+                        "categoryId": "%s"
+                    }
+                    """.formatted(subscriptions.getId())))
+            .andExpect(status().isCreated());
+
+        // Create VARIABLE subscription
+        mockMvc.perform(post("/v1/transactions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "description": "App store purchase",
+                        "amount": 2.99,
+                        "currency": "EUR",
+                        "date": "2026-01-05T00:00:00Z",
+                        "type": "EXPENSE",
+                        "stability": "VARIABLE",
+                        "categoryId": "%s"
+                    }
+                    """.formatted(subscriptions.getId())))
+            .andExpect(status().isCreated());
+
+        // Filter by category AND stability - should return only the FIXED one
+        mockMvc.perform(get("/v1/transactions?categoryId=" + subscriptions.getId() + "&stability=FIXED"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content.length()").value(1))
+            .andExpect(jsonPath("$.content[0].description").value("Netflix"))
+            .andExpect(jsonPath("$.content[0].stability").value("FIXED"));
     }
 
     // T067: Updating transaction stability from FIXED to VARIABLE
