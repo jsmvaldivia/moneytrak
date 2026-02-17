@@ -7,9 +7,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop  # Clean database per test
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+    # Dialect is intentionally omitted — Hibernate auto-detects from the datasource.
+    # H2 tests use H2Dialect; PostgreSQL Testcontainers tests override the datasource
+    # and get PostgreSQLDialect without changing this file.
 
 moneytrak:
   security:

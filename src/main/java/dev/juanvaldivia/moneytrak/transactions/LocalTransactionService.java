@@ -4,6 +4,7 @@ import dev.juanvaldivia.moneytrak.categories.Category;
 import dev.juanvaldivia.moneytrak.categories.CategoryRepository;
 import dev.juanvaldivia.moneytrak.exception.ConflictException;
 import dev.juanvaldivia.moneytrak.exception.NotFoundException;
+import dev.juanvaldivia.moneytrak.transactions.dto.SummaryDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionCreationDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionUpdateDto;
@@ -14,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -99,14 +99,14 @@ public class LocalTransactionService implements TransactionService {
 
     @Override
     @Transactional(readOnly = true)
-    public BigDecimal calculateExpenseTotal() {
-        return transactionRepository.sumAmountByType(TransactionType.EXPENSE);
+    public SummaryDto calculateExpenseTotal() {
+        return new SummaryDto(transactionRepository.sumAmountByType(TransactionType.EXPENSE));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public BigDecimal calculateIncomeTotal() {
-        return transactionRepository.sumAmountByType(TransactionType.INCOME);
+    public SummaryDto calculateIncomeTotal() {
+        return new SummaryDto(transactionRepository.sumAmountByType(TransactionType.INCOME));
     }
 
     /**

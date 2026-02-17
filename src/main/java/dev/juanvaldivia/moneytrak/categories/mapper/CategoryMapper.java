@@ -22,6 +22,7 @@ public class CategoryMapper {
             category.getId(),
             category.getName(),
             category.getIsPredefined(),
+            category.getVersion(),
             category.getCreatedAt(),
             category.getUpdatedAt()
         );

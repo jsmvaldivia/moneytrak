@@ -285,7 +285,7 @@ class TransactionControllerTest {
         // Expense total should only include EXPENSE transactions
         mockMvc.perform(get("/v1/transactions/summary/expenses"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$").value(50.00));
+            .andExpect(jsonPath("$.total").value(50.00));
     }
 
     // T051: Calculating income summary (INCOME only)
@@ -322,7 +322,7 @@ class TransactionControllerTest {
         // Income total should only include INCOME transactions
         mockMvc.perform(get("/v1/transactions/summary/income"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$").value(200.00));
+            .andExpect(jsonPath("$.total").value(200.00));
     }
 
     // T052: Updating transaction type from EXPENSE to INCOME

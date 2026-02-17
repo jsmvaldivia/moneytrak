@@ -1,12 +1,12 @@
 package dev.juanvaldivia.moneytrak.transactions;
 
+import dev.juanvaldivia.moneytrak.transactions.dto.SummaryDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionCreationDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionUpdateDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -72,14 +72,14 @@ public interface TransactionService {
     /**
      * Calculate total amount for all EXPENSE transactions.
      *
-     * @return sum of all expense amounts
+     * @return summary containing sum of all expense amounts
      */
-    BigDecimal calculateExpenseTotal();
+    SummaryDto calculateExpenseTotal();
 
     /**
      * Calculate total amount for all INCOME transactions.
      *
-     * @return sum of all income amounts
+     * @return summary containing sum of all income amounts
      */
-    BigDecimal calculateIncomeTotal();
+    SummaryDto calculateIncomeTotal();
 }

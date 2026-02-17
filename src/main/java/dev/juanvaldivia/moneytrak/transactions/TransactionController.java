@@ -1,5 +1,6 @@
 package dev.juanvaldivia.moneytrak.transactions;
 
+import dev.juanvaldivia.moneytrak.transactions.dto.SummaryDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionCreationDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionUpdateDto;
@@ -12,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.math.BigDecimal;
 import java.net.URI;
 import java.util.UUID;
 
@@ -128,10 +128,10 @@ public class TransactionController {
      * Get total of all EXPENSE transactions.
      * GET /v1/transactions/summary/expenses
      *
-     * @return 200 OK with total expense amount
+     * @return 200 OK with summary containing total expense amount
      */
     @GetMapping("/summary/expenses")
-    public ResponseEntity<BigDecimal> getExpenseTotal() {
+    public ResponseEntity<SummaryDto> getExpenseTotal() {
         return ResponseEntity.ok(service.calculateExpenseTotal());
     }
 
@@ -139,10 +139,10 @@ public class TransactionController {
      * Get total of all INCOME transactions.
      * GET /v1/transactions/summary/income
      *
-     * @return 200 OK with total income amount
+     * @return 200 OK with summary containing total income amount
      */
     @GetMapping("/summary/income")
-    public ResponseEntity<BigDecimal> getIncomeTotal() {
+    public ResponseEntity<SummaryDto> getIncomeTotal() {
         return ResponseEntity.ok(service.calculateIncomeTotal());
     }
 }

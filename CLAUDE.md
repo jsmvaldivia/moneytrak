@@ -235,3 +235,7 @@ Uses JPA `@Version` field with automatic increment:
   - 32 passing integration tests
   - JavaDoc added to public APIs
   - Global exception handling with standardized error responses
+
+## Commit Convention
+
+Do **not** add `Co-Authored-By: Claude` lines to commit messages in this repo.

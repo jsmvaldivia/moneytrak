@@ -71,7 +71,7 @@ class LocalCategoryServiceTest {
     void create_withUniqueName_shouldSaveAndReturnDto() {
         CategoryCreationDto dto = new CategoryCreationDto("Medical");
         Category newCategory = Category.createCustom("Medical");
-        CategoryDto expectedDto = new CategoryDto(UUID.randomUUID(), "Medical", false,
+        CategoryDto expectedDto = new CategoryDto(UUID.randomUUID(), "Medical", false, 0,
             ZonedDateTime.now(), ZonedDateTime.now());
 
         when(categoryRepository.existsByNameIgnoreCase("Medical")).thenReturn(false);
@@ -177,7 +177,7 @@ class LocalCategoryServiceTest {
 
         when(categoryRepository.findAll(pageable)).thenReturn(categoryPage);
         when(categoryMapper.toDto(any(Category.class)))
-            .thenReturn(new CategoryDto(UUID.randomUUID(), "Food & Drinks", true,
+            .thenReturn(new CategoryDto(UUID.randomUUID(), "Food & Drinks", true, 0,
                 ZonedDateTime.now(), ZonedDateTime.now()));
 
         Page<CategoryDto> result = service.findAll(pageable);

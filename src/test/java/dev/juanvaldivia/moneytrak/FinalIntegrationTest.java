@@ -132,13 +132,13 @@ class FinalIntegrationTest {
     mockMvc
         .perform(get("/v1/transactions/summary/expenses"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$").value(75.50));
+        .andExpect(jsonPath("$.total").value(75.50));
 
     // Verify income total
     mockMvc
         .perform(get("/v1/transactions/summary/income"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$").value(500.00));
+        .andExpect(jsonPath("$.total").value(500.00));
 
     // ============================================================================
     // US4: Transaction Stability (FIXED vs VARIABLE)
