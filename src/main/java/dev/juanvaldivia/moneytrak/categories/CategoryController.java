@@ -3,6 +3,7 @@ package dev.juanvaldivia.moneytrak.categories;
 import dev.juanvaldivia.moneytrak.categories.dto.CategoryCreationDto;
 import dev.juanvaldivia.moneytrak.categories.dto.CategoryDto;
 import dev.juanvaldivia.moneytrak.categories.dto.CategoryUpdateDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import java.util.UUID;
  * REST controller for category management endpoints.
  * Provides CRUD operations for transaction categories at /v1/categories.
  */
+@Tag(name = "Categories", description = "Category management endpoints")
 @RestController
 @RequestMapping("/v1/categories")
 public class CategoryController {

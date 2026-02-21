@@ -4,6 +4,7 @@ import dev.juanvaldivia.moneytrak.transactions.dto.SummaryDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionCreationDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionDto;
 import dev.juanvaldivia.moneytrak.transactions.dto.TransactionUpdateDto;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,7 @@ import java.util.UUID;
  * <p>Provides CRUD endpoints for transactions with category linking and composable filtering.
  * All endpoints are versioned under /v1/transactions.
  */
+@Tag(name = "Transactions", description = "Transaction management endpoints")
 @RestController
 @RequestMapping("/v1/transactions")
 public class TransactionController {

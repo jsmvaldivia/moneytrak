@@ -26,15 +26,21 @@ management:
     health:
       show-details: never
 
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 moneytrak:
   security:
     users:
       - username: app-client
-        password: "${APP_CLIENT_PASSWORD}"
+        password: "${APP_CLIENT_PASSWORD:{noop}app-client}"
         role: APP
       - username: backoffice
-        password: "${BACKOFFICE_PASSWORD}"
+        password: "${BACKOFFICE_PASSWORD:{noop}backoffice}"
         role: BACKOFFICE
       - username: admin
-        password: "${ADMIN_PASSWORD}"
+        password: "${ADMIN_PASSWORD:{noop}admin}"
         role: ADMIN
