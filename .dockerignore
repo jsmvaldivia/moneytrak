@@ -1,0 +1,56 @@
+# Build outputs
+target/
+build/
+*.class
+*.jar
+*.war
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.settings/
+.classpath
+.project
+
+# Database files
+data/
+*.mv.db
+*.trace.db
+
+# Secrets and environment
+.env
+.env.*
+*.key
+*.pem
+
+# Documentation
+*.md
+docs/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+test-results/
+coverage/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*~
