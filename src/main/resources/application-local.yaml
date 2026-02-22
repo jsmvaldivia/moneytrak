@@ -1,23 +1,23 @@
 spring:
   datasource:
-    url: jdbc:h2:file:./data/moneytrak
+    url: jdbc:h2:mem:localdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
-
-  h2:
-    console:
-      enabled: true  # Access at http://localhost:8080/h2-console
-      path: /h2-console
-
   jpa:
     hibernate:
-      ddl-auto: validate  # Validate schema matches entities; Flyway owns migrations
-    show-sql: false    # Set true for SQL debugging
-    properties:
-      hibernate:
-        format_sql: true
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: true
+  flyway:
+    enabled: false
 
-logging:
-  level:
-    org.springframework.boot.autoconfigure.h2: DEBUG
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha

@@ -10,16 +10,3 @@ spring:
     # Dialect is intentionally omitted — Hibernate auto-detects from the datasource.
     # H2 tests use H2Dialect; PostgreSQL Testcontainers tests override the datasource
     # and get PostgreSQLDialect without changing this file.
-
-moneytrak:
-  security:
-    users:
-      - username: app-client
-        password: "{noop}app-client"
-        role: APP
-      - username: backoffice
-        password: "{noop}backoffice"
-        role: BACKOFFICE
-      - username: admin
-        password: "{noop}admin"
-        role: ADMIN
