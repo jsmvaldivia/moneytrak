@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17.6
+    container_name: moneytrak-postgres
+    environment:
+      POSTGRES_DB: moneytrak
+      POSTGRES_USER: moneytrak
+      POSTGRES_PASSWORD: moneytrak
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moneytrak -d moneytrak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
