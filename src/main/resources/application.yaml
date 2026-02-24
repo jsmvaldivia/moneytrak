@@ -1,3 +1,4 @@
+
 spring:
   application:
     name: moneytrak
@@ -44,3 +45,6 @@ moneytrak:
       - username: admin
         password: "${ADMIN_PASSWORD:{noop}admin}"
         role: ADMIN
+
+server:
+  address: 0.0.0.0
