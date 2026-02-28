@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Global exception handler for all REST endpoints (transactions, categories).
+ * Global exception handler for all REST endpoints (transactions, categories, accounts, readings).
  * Provides consistent error response format across all API endpoints.
  *
  * <p>Error responses follow the format: {status, error, message, details[]}
@@ -19,7 +19,9 @@ import java.util.List;
 @RestControllerAdvice(basePackages = {
     "dev.juanvaldivia.moneytrak.exception",
     "dev.juanvaldivia.moneytrak.transactions",
-    "dev.juanvaldivia.moneytrak.categories"
+    "dev.juanvaldivia.moneytrak.categories",
+    "dev.juanvaldivia.moneytrak.accounts",
+    "dev.juanvaldivia.moneytrak.readings"
 })
 public class GlobalExceptionHandler {
 

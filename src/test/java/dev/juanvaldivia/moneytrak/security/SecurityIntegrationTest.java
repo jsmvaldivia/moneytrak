@@ -361,6 +361,147 @@ class SecurityIntegrationTest {
     }
 
     // ========================================================================
+    // Portfolio Readings Security Tests
+    // ========================================================================
+
+    @Nested
+    class PortfolioReadingsSecurity {
+
+        private static final String VALID_ACCOUNT_JSON = """
+                {
+                    "name": "Test Bank",
+                    "type": "BANK",
+                    "currency": "USD"
+                }
+                """;
+
+        // AUTH-001: No auth to /v1/accounts → 401
+        @Test
+        void unauthenticated_getAccounts_returns401() throws Exception {
+            mockMvc.perform(get("/v1/accounts"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.status").value(401))
+                    .andExpect(jsonPath("$.error").value("Unauthorized"));
+        }
+
+        // AUTH-002: No auth to /v1/readings → 401
+        @Test
+        void unauthenticated_getLatestReadings_returns401() throws Exception {
+            mockMvc.perform(get("/v1/readings/latest"))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.status").value(401));
+        }
+
+        // AUTH-003: APP role GET /v1/accounts → 200
+        @Test
+        void appRole_getAccounts_returns200() throws Exception {
+            mockMvc.perform(get("/v1/accounts")
+                            .with(httpBasic("app-client", "app-client")))
+                    .andExpect(status().isOk());
+        }
+
+        // AUTH-004: APP role GET /v1/readings/latest → 200
+        @Test
+        void appRole_getLatestReadings_returns200() throws Exception {
+            mockMvc.perform(get("/v1/readings/latest")
+                            .with(httpBasic("app-client", "app-client")))
+                    .andExpect(status().isOk());
+        }
+
+        // AUTH-005: APP role POST /v1/accounts → 403
+        @Test
+        void appRole_createAccount_returns403() throws Exception {
+            mockMvc.perform(post("/v1/accounts")
+                            .with(httpBasic("app-client", "app-client"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(VALID_ACCOUNT_JSON))
+                    .andExpect(status().isForbidden())
+                    .andExpect(jsonPath("$.status").value(403))
+                    .andExpect(jsonPath("$.error").value("Forbidden"));
+        }
+
+        // AUTH-006: BACKOFFICE role full CRUD accounts → all succeed
+        @Test
+        void backofficeRole_fullCrudAccounts_allSucceed() throws Exception {
+            // Create
+            String createResponse = mockMvc.perform(post("/v1/accounts")
+                            .with(httpBasic("backoffice", "backoffice"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(VALID_ACCOUNT_JSON))
+                    .andExpect(status().isCreated())
+                    .andReturn().getResponse().getContentAsString();
+
+            String accountId = extractId(createResponse);
+
+            // Read
+            mockMvc.perform(get("/v1/accounts/{id}", accountId)
+                            .with(httpBasic("backoffice", "backoffice")))
+                    .andExpect(status().isOk());
+
+            // Update
+            mockMvc.perform(put("/v1/accounts/{id}", accountId)
+                            .with(httpBasic("backoffice", "backoffice"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"name\":\"Updated\",\"version\":0}"))
+                    .andExpect(status().isOk());
+
+            // Delete
+            mockMvc.perform(delete("/v1/accounts/{id}", accountId)
+                            .with(httpBasic("backoffice", "backoffice")))
+                    .andExpect(status().isNoContent());
+        }
+
+        // AUTH-007: ADMIN role full CRUD readings → all succeed
+        @Test
+        void adminRole_fullCrudReadings_allSucceed() throws Exception {
+            // First create an account
+            String accountResponse = mockMvc.perform(post("/v1/accounts")
+                            .with(httpBasic("admin", "admin"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(VALID_ACCOUNT_JSON))
+                    .andExpect(status().isCreated())
+                    .andReturn().getResponse().getContentAsString();
+
+            String accountId = extractId(accountResponse);
+
+            // Create reading
+            String readingJson = """
+                    {
+                        "accountId": "%s",
+                        "amount": 15000.50,
+                        "readingDate": "2026-02-28T10:00:00Z"
+                    }
+                    """.formatted(accountId);
+
+            String createResponse = mockMvc.perform(post("/v1/readings")
+                            .with(httpBasic("admin", "admin"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(readingJson))
+                    .andExpect(status().isCreated())
+                    .andReturn().getResponse().getContentAsString();
+
+            String readingId = extractId(createResponse);
+
+            // Read
+            mockMvc.perform(get("/v1/readings/{id}", readingId)
+                            .with(httpBasic("admin", "admin")))
+                    .andExpect(status().isOk());
+
+            // Update
+            mockMvc.perform(put("/v1/readings/{id}", readingId)
+                            .with(httpBasic("admin", "admin"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"amount\":20000,\"version\":0}"))
+                    .andExpect(status().isOk());
+
+            // Delete
+            mockMvc.perform(delete("/v1/readings/{id}", readingId)
+                            .with(httpBasic("admin", "admin")))
+                    .andExpect(status().isNoContent());
+        }
+    }
+
+    // ========================================================================
     // Helper
     // ========================================================================
 
