@@ -10,3 +10,5 @@ spring:
     # Dialect is intentionally omitted — Hibernate auto-detects from the datasource.
     # H2 tests use H2Dialect; PostgreSQL Testcontainers tests override the datasource
     # and get PostgreSQLDialect without changing this file.
+  flyway:
+    enabled: false  # Disable Flyway for tests; use Hibernate schema generation instead
